@@ -4,12 +4,13 @@
 import {
   G, global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, objectExists,
   draw_sprite_ext, draw_set_color, draw_set_font, draw_set_alpha, draw_rectangle, draw_text, controls,
+  draw_set_halign, draw_text_transformed, fa_center, fa_left,
 } from '../runtime/gm.js';
 import { snd_init, snd_play, mus_loop_ext, mus_volume, mus_stop } from '../runtime/audio.js';
 import { startBattle } from '../battle/setup.js';
 import { startPractice, PRACTICE_HP } from '../debug/sandbox.js';
 import { gotoRoom, fadeOut, centerText } from './common.js';
-import { saveSettings, applyVolume, BORDERS } from '../settings.js';
+import { saveSettings, applyVolume } from '../settings.js';
 import { openControls, keyName } from './controls.js';
 import './gameover.js';
 import './ending.js';
@@ -45,11 +46,12 @@ class Title extends Instance {
   draw() {
     const t = this.t;
     const a = Math.min(1, t / 30);
-    draw_sprite_ext('IMAGE_LOGO', 0, 320 - 224, 34, 2, 2, 0, 0xffffff, a);
-    draw_set_font('fnt_main');
-    draw_set_color(0x808080);
+    draw_set_font('fnt_mainbig');
+    draw_set_color(0xffffff);
     draw_set_alpha(a);
-    centerText(320, 110, 'JEVIL  FIGHT  SIMULATOR');
+    draw_set_halign(fa_center);
+    draw_text_transformed(320, 40, 'JEVIL FIGHT SIMULATOR', 2, 2, 0);
+    draw_set_halign(fa_left);
     draw_set_alpha(1);
     const bob = Math.sin(t / 12) * 6;
     draw_sprite_ext('spr_joker_dance', this.image_index, 320, 215 + bob, 3, 3, 0, 0xffffff, a);
@@ -144,14 +146,6 @@ function setVolume(v) {
   snd_play('snd_select');
 }
 
-// The screen border (see src/border.js); the layout changes, so the page is re-fitted.
-function setBorder(dir) {
-  const i = BORDERS.indexOf(G.settings.border);
-  G.settings.border = BORDERS[(i + dir + BORDERS.length) % BORDERS.length];
-  saveSettings();
-  dispatchEvent(new Event('resize'));
-}
-
 function optionsMenu(music, cur = 0, panel = null) {
   panel = panel || instance_create(0, 0, 'obj_sim_panel');
   panel.title = 'OPTIONS';
@@ -165,25 +159,23 @@ function optionsMenu(music, cur = 0, panel = null) {
   };
   menu.setup([
     () => 'VOLUME: < ' + Math.round(G.settings.volume * 100) + '% >',
-    () => 'BORDER: < ' + G.settings.border + ' >',
     () => 'EASY MODE: ' + (G.settings.easy ? 'ON' : 'OFF'),
     () => 'INTRO: ' + (G.settings.intro ? 'ON' : 'OFF'),
     () => 'SIMPLIFY VFX: ' + (G.settings.simplify ? 'ON' : 'OFF'),
     'CONTROLS',
     'BACK',
   ], (i, m) => {
-    if (i == 6) return back(m);
-    if (i == 5) {
+    if (i == 5) return back(m);
+    if (i == 4) {
       instance_destroy(m);
       panel.title = 'CONTROLS';
-      openControls(() => optionsMenu(music, 5, panel));
+      openControls(() => optionsMenu(music, 4, panel));
       return;
     }
     if (i == 0) setVolume(G.settings.volume >= 1 ? 0 : G.settings.volume + 0.1);
-    if (i == 1) setBorder(1);
-    if (i == 2) G.settings.easy = !G.settings.easy;
-    if (i == 3) G.settings.intro = !G.settings.intro;
-    if (i == 4) {
+    if (i == 1) G.settings.easy = !G.settings.easy;
+    if (i == 2) G.settings.intro = !G.settings.intro;
+    if (i == 3) {
       G.settings.simplify = !G.settings.simplify;
       global.flag[8] = G.settings.simplify ? 1 : 0;
     }
@@ -193,10 +185,7 @@ function optionsMenu(music, cur = 0, panel = null) {
   }, 'fnt_mainbig', 36);
   menu.cur = cur;
   menu.onBack = back;
-  menu.onAdjust = (i, dir) => {
-    if (i == 0) setVolume(G.settings.volume + dir * 0.1);
-    if (i == 1) setBorder(dir);
-  };
+  menu.onAdjust = (i, dir) => { if (i == 0) setVolume(G.settings.volume + dir * 0.1); };
 }
 defineScript('startTitle', startTitle);
 

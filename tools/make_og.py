@@ -50,8 +50,25 @@ for y in range(H):
     for x in range(W):
         img[(y * W + x) * 4:(y * W + x) * 4 + 4] = bytes((r, g, b, 255))
 
-lw, lh, logo = scaled("IMAGE_LOGO", 4)
-paste(img, W, H, logo, lw, lh, (W - lw) // 2, 40)
+def text_image(s, font="fnt_mainbig"):
+    meta = json.load(open(os.path.join(ROOT, "assets", "fonts.json")))[font]
+    with open(os.path.join(ROOT, "assets", "fonts", font + ".png"), "rb") as f:
+        aw, ah, atlas = read_png(f.read())
+    glyphs = [meta["glyphs"][str(ord(c))] for c in s]
+    tw = sum(g[4] for g in glyphs)
+    th = max(g[3] for g in glyphs)
+    out = bytearray(tw * th * 4)
+    cx = 0
+    for gx, gy, gw, gh, shift, offset in glyphs:
+        if gw:
+            paste(out, tw, th, crop(atlas, aw, gx, gy, gw, gh), gw, gh, cx + offset, 0)
+        cx += shift
+    return tw, th, out
+
+
+tw, th, title = text_image("JEVIL FIGHT SIMULATOR")
+k = 3
+paste(img, W, H, scale_nearest(title, tw, th, tw * k, th * k), tw * k, th * k, (W - tw * k) // 2, 60)
 jw, jh, jevil = scaled("spr_joker_dance", 8, 0)
 paste(img, W, H, jevil, jw, jh, (W - jw) // 2, 200)
 hw, hh, heart = scaled("spr_heart", 3)

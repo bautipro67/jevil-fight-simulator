@@ -4,7 +4,6 @@ import { setMasterVolume } from './runtime/audio.js';
 
 const SETTINGS_KEY = 'jevil-sim-settings';
 const CONTROLS_KEY = 'jevil-sim-controls';
-export const BORDERS = ['OFF', 'SIMPLE', 'CARD CASTLE'];
 
 function read(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
@@ -14,9 +13,8 @@ function write(key, value) {
 }
 
 export function loadSettings() {
-  const defaults = { simplify: false, intro: true, easy: false, volume: 1, border: 'CARD CASTLE' };
+  const defaults = { simplify: false, intro: true, easy: false, volume: 1 };
   G.settings = { ...defaults, ...(read(SETTINGS_KEY) || {}) };
-  if (!BORDERS.includes(G.settings.border)) G.settings.border = defaults.border;
   setControls(read(CONTROLS_KEY));
 }
 
