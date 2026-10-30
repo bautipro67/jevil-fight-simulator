@@ -1,7 +1,7 @@
 // Shared bits for the non-battle screens: room changes, the dark-world text box, a heart menu.
 import {
   G, global, Instance, defineObject, room_reset, instance_create, draw_sprite_ext, draw_sprite_stretched_ext,
-  draw_set_color, draw_set_font, draw_text, draw_sprite, string_width, up_p, down_p, button1_p, button2_p, round,
+  draw_set_color, draw_set_font, draw_text, draw_sprite, string_width, up_p, down_p, left_p, right_p, button1_p, button2_p, round,
 } from '../runtime/gm.js';
 import { snd_free_all, snd_play } from '../runtime/audio.js';
 
@@ -55,6 +55,7 @@ export class HeartMenu extends Instance {
     this.alpha = 0;
     this.done = false;
     this.onBack = null; // X / Shift handler, for submenus
+    this.onAdjust = null; // (index, -1 | 1) for left / right, e.g. a volume slider
     return this;
   }
   step() {
@@ -65,6 +66,7 @@ export class HeartMenu extends Instance {
     const n = this.items.length;
     if (down_p()) { this.cur = (this.cur + 1) % n; snd_play('snd_menumove'); }
     if (up_p()) { this.cur = (this.cur + n - 1) % n; snd_play('snd_menumove'); }
+    if (this.onAdjust && (left_p() || right_p())) this.onAdjust(this.cur, right_p() ? 1 : -1);
     if (button1_p()) {
       snd_play('snd_select');
       this.done = true;

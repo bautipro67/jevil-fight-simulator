@@ -7,7 +7,7 @@ import {
   G, global, Instance, defineObject, defineScript, instance_create, instance_destroy, instance_exists,
   instancesOf, event_user, choose, keyboard_check, keyboard_check_pressed, random_set_seed, round, S,
   draw_set_font, draw_set_halign, draw_set_color, draw_set_alpha, draw_rectangle, draw_text, draw_sprite_ext,
-  fa_left, fa_center, merge_color, button1_p, vk,
+  fa_left, fa_center, merge_color, button1_p, vk, draw_self,
 } from '../runtime/gm.js';
 import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js';
 import { gotoRoom } from '../screens/common.js';
@@ -472,6 +472,11 @@ class PracticeController extends SandboxController {
   drawEnd() {
     const x = G.camX, y = G.camY;
     const [, , name] = ATTACKS[this.attackIndex];
+    // The HUD fades while the SOUL is down in its area (the Final Chaos board fills the screen).
+    const hearts = instancesOf('obj_heart');
+    const near = hearts.some(h => h.y > y + 330);
+    this.hudAlpha = (this.hudAlpha ?? 1) + ((near ? 0.25 : 1) - (this.hudAlpha ?? 1)) * 0.25;
+    draw_set_alpha(this.hudAlpha);
     draw_set_halign(fa_left);
     draw_set_font('fnt_mainbig');
     draw_set_color(0xffffff);
@@ -492,6 +497,9 @@ class PracticeController extends SandboxController {
     draw_set_font('fnt_main');
     draw_set_color(0x808080);
     draw_text(x + 40, y + 446, 'ESC: QUIT TO TITLE');
+    draw_set_alpha(1);
+    // The SOUL always stays on top of the HUD.
+    for (const h of hearts) if (h.visible) draw_self(h);
     draw_set_halign(fa_center);
     draw_set_font('fnt_mainbig');
     if (this.finished) {

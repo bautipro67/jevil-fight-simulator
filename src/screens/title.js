@@ -5,14 +5,28 @@ import {
   G, global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, objectExists,
   draw_sprite_ext, draw_set_color, draw_set_font, draw_set_alpha, draw_rectangle, draw_text,
 } from '../runtime/gm.js';
-import { snd_init, mus_loop_ext, mus_volume, mus_stop } from '../runtime/audio.js';
+import { snd_init, snd_play, mus_loop_ext, mus_volume, mus_stop, setMasterVolume } from '../runtime/audio.js';
 import { startBattle } from '../battle/setup.js';
 import { startPractice, PRACTICE_HP } from '../debug/sandbox.js';
 import { gotoRoom, fadeOut, centerText } from './common.js';
 import './gameover.js';
 import './ending.js';
 
-G.settings = G.settings || { simplify: false, intro: true, easy: false };
+// Options are remembered in this browser (when storage is available).
+const SETTINGS_KEY = 'jevil-sim-settings';
+function loadSettings() {
+  const defaults = { simplify: false, intro: true, easy: false, volume: 1 };
+  try {
+    return { ...defaults, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
+  } catch (e) {
+    return defaults;
+  }
+}
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(G.settings)); } catch (e) { /* not saved */ }
+}
+G.settings = G.settings || loadSettings();
+setMasterVolume(G.settings.volume);
 
 class Title extends Instance {
   create() {
@@ -36,7 +50,7 @@ class Title extends Instance {
     draw_set_font('fnt_mainbig');
     draw_set_color(0xffff00);
     draw_set_alpha(a * (0.6 + Math.sin(t / 8) * 0.4));
-    centerText(320, 284, 'CHAOS, CHAOS!');
+    if (!G.titleCompact) centerText(320, 284, 'CHAOS, CHAOS!'); // hidden behind the longer OPTIONS list
     draw_set_alpha(1);
     draw_set_font('fnt_main');
     draw_set_color(0x808080);
@@ -47,6 +61,7 @@ class Title extends Instance {
 defineObject('obj_sim_title', Title);
 
 export function startTitle() {
+  G.titleCompact = false;
   const p = new URLSearchParams(location.search);
   if (p.has('practice')) {
     startPractice({ start: (Number(p.get('attack')) || 1) - 1, hp: Number(p.get('hp')) || 90 });
@@ -113,26 +128,39 @@ function practiceMenu(music) {
   menu.onBack = back;
 }
 
+// Volume in 10% steps; Z cycles, left / right adjust.
+function setVolume(v) {
+  G.settings.volume = Math.round(Math.max(0, Math.min(1, v)) * 10) / 10;
+  setMasterVolume(G.settings.volume);
+  saveSettings();
+  snd_play('snd_select');
+}
+
 function optionsMenu(music) {
-  const menu = instance_create(MENU_X, MENU_Y, 'obj_sim_heartmenu');
-  const back = m => { instance_destroy(m); mainMenu(music, 2); };
+  G.titleCompact = true;
+  const menu = instance_create(MENU_X, MENU_Y - 28, 'obj_sim_heartmenu');
+  const back = m => { G.titleCompact = false; saveSettings(); instance_destroy(m); mainMenu(music, 2); };
   menu.setup([
+    () => 'VOLUME: < ' + Math.round(G.settings.volume * 100) + '% >',
     () => 'EASY MODE: ' + (G.settings.easy ? 'ON' : 'OFF'),
     () => 'INTRO: ' + (G.settings.intro ? 'ON' : 'OFF'),
     () => 'SIMPLIFY VFX: ' + (G.settings.simplify ? 'ON' : 'OFF'),
     'BACK',
   ], (i, m) => {
-    if (i == 3) return back(m);
-    if (i == 0) G.settings.easy = !G.settings.easy;
-    if (i == 1) G.settings.intro = !G.settings.intro;
-    if (i == 2) {
+    if (i == 4) return back(m);
+    if (i == 0) setVolume(G.settings.volume >= 1 ? 0 : G.settings.volume + 0.1);
+    if (i == 1) G.settings.easy = !G.settings.easy;
+    if (i == 2) G.settings.intro = !G.settings.intro;
+    if (i == 3) {
       G.settings.simplify = !G.settings.simplify;
       global.flag[8] = G.settings.simplify ? 1 : 0;
     }
+    saveSettings();
     m.done = false;
     m.buffer = 1;
-  }, 'fnt_mainbig', 28);
+  }, 'fnt_mainbig', 27);
   menu.onBack = back;
+  menu.onAdjust = (i, dir) => { if (i == 0) setVolume(G.settings.volume + dir * 0.1); };
 }
 defineScript('startTitle', startTitle);
 
