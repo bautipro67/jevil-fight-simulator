@@ -5,6 +5,7 @@ import {
   left_h, right_h, up_h, down_h, button2_h,
 } from './rt.js';
 import { first, view_x, view_y, move_towards_point } from './common.js';
+import { drawSoulHat } from '../hats.js';
 
 const SOLID = 'obj_battlesolid';
 
@@ -115,6 +116,10 @@ export class Heart extends Instance {
     event_user(other, 5);
     G.other = prev;
   }
+  draw() {
+    draw_self(this);
+    drawSoulHat(this);
+  }
 }
 defineObject('obj_heart', Heart);
 
@@ -210,6 +215,7 @@ export class MoveHeart extends Instance {
   }
   draw() {
     draw_self(this);
+    drawSoulHat(this);
   }
 }
 defineObject('obj_moveheart', MoveHeart);

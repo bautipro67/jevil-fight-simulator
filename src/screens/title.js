@@ -10,7 +10,8 @@ import { snd_init, snd_play, mus_loop_ext, mus_volume, mus_stop } from '../runti
 import { startBattle } from '../battle/setup.js';
 import { startPractice, PRACTICE_HP } from '../debug/sandbox.js';
 import { gotoRoom, fadeOut, centerText } from './common.js';
-import { saveSettings, applyVolume } from '../settings.js';
+import { saveSettings, applyVolume, getBest } from '../settings.js';
+import { HATS, currentHat, drawHat } from '../hats.js';
 import { openControls, keyName } from './controls.js';
 import './gameover.js';
 import './ending.js';
@@ -31,6 +32,11 @@ class Panel extends Instance {
     draw_set_font('fnt_mainbig');
     draw_set_color(0xffffff);
     centerText(320, 34, this.title);
+    // The SOUL wearing the chosen hat, next to the SOUL HAT option.
+    if (this.hatPreview) {
+      draw_sprite_ext('spr_heart', 0, 520, 160, 3, 3, 0, 0xffffff, this.alpha / 0.9);
+      drawHat(544, 160, 3);
+    }
   }
 }
 defineObject('obj_sim_panel', Panel);
@@ -123,7 +129,10 @@ function practiceMenu(music) {
   const menu = instance_create(MENU_X, MENU_Y, 'obj_sim_heartmenu');
   const back = m => { instance_destroy(m); mainMenu(music, 1); };
   menu.setup([
-    'START',
+    () => {
+      const best = getBest(PRACTICE_HP[P.hp]);
+      return 'START' + (P.start == 0 && best ? '   (BEST ' + best + ')' : '');
+    },
     () => 'FROM ATTACK: ' + (P.start + 1) + ' / 16',
     () => 'HP: ' + PRACTICE_HP[P.hp] + (PRACTICE_HP[P.hp] == 1 ? ' (NO HIT)' : ''),
     'BACK',
@@ -146,6 +155,13 @@ function setVolume(v) {
   snd_play('snd_select');
 }
 
+function setHat(dir) {
+  const i = HATS.indexOf(currentHat());
+  G.settings.hat = HATS[(i + dir + HATS.length) % HATS.length].name;
+  saveSettings();
+  snd_play('snd_select');
+}
+
 function optionsMenu(music, cur = 0, panel = null) {
   panel = panel || instance_create(0, 0, 'obj_sim_panel');
   panel.title = 'OPTIONS';
@@ -157,25 +173,29 @@ function optionsMenu(music, cur = 0, panel = null) {
     instance_destroy(panel);
     mainMenu(music, 2);
   };
+  panel.hatPreview = true;
   menu.setup([
     () => 'VOLUME: < ' + Math.round(G.settings.volume * 100) + '% >',
+    () => 'SOUL HAT: < ' + currentHat().name + ' >',
     () => 'EASY MODE: ' + (G.settings.easy ? 'ON' : 'OFF'),
     () => 'INTRO: ' + (G.settings.intro ? 'ON' : 'OFF'),
     () => 'SIMPLIFY VFX: ' + (G.settings.simplify ? 'ON' : 'OFF'),
     'CONTROLS',
     'BACK',
   ], (i, m) => {
-    if (i == 5) return back(m);
-    if (i == 4) {
+    if (i == 6) return back(m);
+    if (i == 5) {
       instance_destroy(m);
       panel.title = 'CONTROLS';
-      openControls(() => optionsMenu(music, 4, panel));
+      panel.hatPreview = false;
+      openControls(() => optionsMenu(music, 5, panel));
       return;
     }
     if (i == 0) setVolume(G.settings.volume >= 1 ? 0 : G.settings.volume + 0.1);
-    if (i == 1) G.settings.easy = !G.settings.easy;
-    if (i == 2) G.settings.intro = !G.settings.intro;
-    if (i == 3) {
+    if (i == 1) setHat(1);
+    if (i == 2) G.settings.easy = !G.settings.easy;
+    if (i == 3) G.settings.intro = !G.settings.intro;
+    if (i == 4) {
       G.settings.simplify = !G.settings.simplify;
       global.flag[8] = G.settings.simplify ? 1 : 0;
     }
@@ -185,7 +205,10 @@ function optionsMenu(music, cur = 0, panel = null) {
   }, 'fnt_mainbig', 36);
   menu.cur = cur;
   menu.onBack = back;
-  menu.onAdjust = (i, dir) => { if (i == 0) setVolume(G.settings.volume + dir * 0.1); };
+  menu.onAdjust = (i, dir) => {
+    if (i == 0) setVolume(G.settings.volume + dir * 0.1);
+    if (i == 1) setHat(dir);
+  };
 }
 defineScript('startTitle', startTitle);
 

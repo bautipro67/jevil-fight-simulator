@@ -13,7 +13,7 @@ function write(key, value) {
 }
 
 export function loadSettings() {
-  const defaults = { simplify: false, intro: true, easy: false, volume: 1 };
+  const defaults = { simplify: false, intro: true, easy: false, volume: 1, hat: 'NONE' };
   G.settings = { ...defaults, ...(read(SETTINGS_KEY) || {}) };
   setControls(read(CONTROLS_KEY));
 }
@@ -24,6 +24,17 @@ export function saveSettings() {
 
 export function saveControls() {
   write(CONTROLS_KEY, controls);
+}
+
+// Best practice scores of full runs (from attack 1), by starting HP.
+const BEST_KEY = 'jevil-sim-best';
+export const getBest = hp => (read(BEST_KEY) || {})[hp] || 0;
+export function saveBest(hp, score) {
+  const all = read(BEST_KEY) || {};
+  if (score <= (all[hp] || 0)) return false;
+  all[hp] = score;
+  write(BEST_KEY, all);
+  return true;
 }
 
 export function applyVolume() {

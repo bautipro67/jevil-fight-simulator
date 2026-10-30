@@ -11,6 +11,8 @@ import {
 } from '../runtime/gm.js';
 import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js';
 import { gotoRoom } from '../screens/common.js';
+import { getBest, saveBest } from '../settings.js';
+import { drawSoulHat } from '../hats.js';
 import { tagParent } from '../jevil/common.js';
 import { scr_moveheart } from '../jevil/soul.js';
 
@@ -386,8 +388,12 @@ defineObject('obj_sandboxcontroller', SandboxController);
 
 // Bad Time Simulator style: dodge each attack of the real fight in order. Losing the whole
 // HP bar restarts the attack; surviving it moves on to the next one, up to the Final Chaos.
+// Score: 1000 per cleared attack, +500 if it was cleared without a hit, plus grazing points
+// earned in the successful attempt, all multiplied by the HP difficulty; each retry costs 300.
 const PRACTICE_COUNT = 16; // jattack 0..15
 export const PRACTICE_HP = [90, 45, 1];
+const HP_MULTIPLIER = { 90: 1, 45: 1.5, 1: 2 };
+const CLEAR_POINTS = 1000, PERFECT_POINTS = 500, RETRY_PENALTY = 300, GRAZE_POINTS = 4;
 
 class PracticeController extends SandboxController {
   create() {
@@ -402,12 +408,22 @@ class PracticeController extends SandboxController {
     this.bannerTimer = 0;
     this.prevHp = null;
     this.wait = 45;
+    this.score = 0;
+    this.attemptGraze = 0;
+    this.attemptHit = false;
+    this.fullRun = false;
+    this.newBest = false;
+    this.best = 0;
   }
+  get mult() { return HP_MULTIPLIER[this.poolMax] ?? 1; }
   begin() {
     this.pool = this.poolMax;
     this.failed = false;
+    this.attemptGraze = 0;
+    this.attemptHit = false;
     for (let c = 1; c <= 3; c++) global.hp[c] = global.maxhp[c];
     this.prevHp = global.hp.slice();
+    global.tension = 0;
     super.begin();
   }
   step() {
@@ -421,8 +437,14 @@ class PracticeController extends SandboxController {
       let lost = 0;
       for (let c = 1; c <= 3; c++) lost = Math.max(lost, this.prevHp[c] - global.hp[c]);
       if (lost > 0) {
+        this.attemptHit = true;
         this.pool = Math.max(0, this.pool - lost);
         if (this.pool <= 0) this.fail();
+      }
+      // Grazing raises TP; it is turned into points and TP is emptied so it never caps.
+      if (global.tension > 0) {
+        this.attemptGraze += global.tension * GRAZE_POINTS;
+        global.tension = 0;
       }
     }
     // The party never falls, so Jevil keeps targeting the way he does in the real fight.
@@ -452,17 +474,29 @@ class PracticeController extends SandboxController {
     this.wait = 45;
     if (this.failed) {
       this.retries += 1;
+      this.score = Math.max(0, this.score - RETRY_PENALTY);
       return;
     }
+    const perfect = !this.attemptHit;
+    const gained = Math.round((CLEAR_POINTS + (perfect ? PERFECT_POINTS : 0) + this.attemptGraze) * this.mult);
+    this.score += gained;
+    this.attemptGraze = 0;
     if (this.attackIndex + 1 >= PRACTICE_COUNT) {
       this.finished = true;
       this.phase = 'done';
+      if (this.fullRun) this.newBest = saveBest(this.poolMax, this.score);
+      this.best = Math.max(this.best, this.fullRun ? this.score : 0);
       snd_play('snd_won');
       return;
     }
     this.attackIndex += 1;
     snd_play('snd_great_shine');
-    this.show('CLEAR!', 0xffff00);
+    this.show(`${perfect ? 'PERFECT!' : 'CLEAR!'} +${gained}`, perfect ? 0x40ffff : 0xffff00);
+  }
+  rank() {
+    const top = PRACTICE_COUNT * (CLEAR_POINTS + PERFECT_POINTS) * this.mult;
+    const r = this.score / top;
+    return r >= 0.85 ? 'S' : r >= 0.65 ? 'A' : r >= 0.45 ? 'B' : 'C';
   }
   quit() {
     if (this.realGameover) defineScript('scr_gameover', this.realGameover);
@@ -493,25 +527,33 @@ class PracticeController extends SandboxController {
     if (this.pool > 0) draw_rectangle(bx, by, bx + Math.max(1, Math.round(bw * this.pool / this.poolMax)), by + 20, false);
     draw_set_color(0xffffff);
     draw_text(x + 290, y + 400, `${Math.ceil(this.pool)} / ${this.poolMax}`);
-    draw_text(x + 460, y + 400, `RETRIES ${this.retries}`);
+    const live = this.score + Math.round(this.attemptGraze * this.mult);
+    draw_text(x + 440, y + 400, `SCORE ${live}`);
     draw_set_font('fnt_main');
     draw_set_color(0x808080);
     draw_text(x + 40, y + 446, 'ESC: QUIT TO TITLE');
+    draw_text(x + 300, y + 446, `RETRIES ${this.retries}` + (this.fullRun ? `     BEST ${this.best}` : '     PARTIAL RUN (NO BEST)'));
     draw_set_alpha(1);
     // The SOUL always stays on top of the HUD.
-    for (const h of hearts) if (h.visible) draw_self(h);
+    for (const h of hearts) if (h.visible) { draw_self(h); drawSoulHat(h); }
     draw_set_halign(fa_center);
     draw_set_font('fnt_mainbig');
     if (this.finished) {
-      draw_set_alpha(0.75);
+      draw_set_alpha(0.8);
       draw_set_color(0);
-      draw_rectangle(x + 120, y + 120, x + 520, y + 300, false);
+      draw_rectangle(x + 110, y + 90, x + 530, y + 330, false);
       draw_set_alpha(1);
       draw_set_color(0xffff00);
-      draw_text(x + 320, y + 150, 'PRACTICE COMPLETE!');
+      draw_text(x + 320, y + 110, 'PRACTICE COMPLETE!');
       draw_set_color(0xffffff);
+      draw_text(x + 320, y + 160, `SCORE: ${this.score}   RANK ${this.rank()}`);
       draw_text(x + 320, y + 200, `RETRIES: ${this.retries}`);
-      draw_text(x + 320, y + 250, 'PRESS Z');
+      if (this.newBest) {
+        draw_set_color(0x40ffff);
+        draw_text(x + 320, y + 240, 'NEW BEST!');
+      } else if (this.fullRun) draw_text(x + 320, y + 240, `BEST: ${this.best}`);
+      draw_set_color(0xffffff);
+      draw_text(x + 320, y + 285, 'PRESS Z');
     } else if (this.bannerTimer > 0) {
       draw_set_alpha(Math.min(1, this.bannerTimer / 15));
       draw_set_color(this.bannerColor);
@@ -525,8 +567,11 @@ defineObject('obj_practicecontroller', PracticeController);
 
 export function startPractice({ start = 0, hp = 90 } = {}) {
   gotoRoom();
-  const ctl = setupArena('obj_practicecontroller', Math.max(0, Math.min(PRACTICE_COUNT - 1, start)));
+  const first = Math.max(0, Math.min(PRACTICE_COUNT - 1, start));
+  const ctl = setupArena('obj_practicecontroller', first);
   ctl.poolMax = ctl.pool = hp;
+  ctl.fullRun = first === 0 && HP_MULTIPLIER[hp] !== undefined;
+  ctl.best = getBest(hp);
   ctl.toggleMusic();
 }
 
