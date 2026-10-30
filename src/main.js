@@ -79,9 +79,7 @@ function debugKeys() {
 
 async function start() {
   // Registers every ported object and script.
-  for (const mod of ['./battle/index.js', './jevil/index.js']) {
-    try { await import(mod); } catch (e) { console.warn('could not load', mod, e); }
-  }
+  await Promise.all([import('./battle/index.js'), import('./jevil/index.js')]);
   const mode = params.has('sandbox') ? 'sandbox' : 'battle';
   if (mode === 'sandbox') {
     const sb = await import('./debug/sandbox.js');
@@ -108,12 +106,28 @@ async function boot() {
   loop();
 }
 
-boot().catch(err => {
+// A file that fails to download (e.g. a brief server error) is retried with one automatic reload.
+function retriedOnce() {
+  try {
+    if (sessionStorage.getItem('jevil-retry')) return true;
+    sessionStorage.setItem('jevil-retry', '1');
+  } catch (e) { return true; }
+  return false;
+}
+
+boot().then(() => {
+  try { sessionStorage.removeItem('jevil-retry'); } catch (e) { /* storage unavailable */ }
+}).catch(err => {
   console.error(err);
+  if (!retriedOnce()) {
+    location.reload();
+    return;
+  }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, 640, 480);
   ctx.fillStyle = '#f44';
   ctx.font = '16px monospace';
-  ctx.fillText('Error: ' + err.message, 20, 40);
+  ctx.fillText('Could not load the game. Please reload the page.', 20, 40);
+  ctx.fillText('Error: ' + err.message, 20, 64);
 });
