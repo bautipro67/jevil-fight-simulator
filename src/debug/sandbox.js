@@ -7,9 +7,10 @@ import {
   G, global, Instance, defineObject, defineScript, instance_create, instance_destroy, instance_exists,
   instancesOf, event_user, choose, keyboard_check, keyboard_check_pressed, random_set_seed, round, S,
   draw_set_font, draw_set_halign, draw_set_color, draw_set_alpha, draw_rectangle, draw_text, draw_sprite_ext,
-  fa_left, merge_color,
+  fa_left, fa_center, merge_color, button1_p, vk,
 } from '../runtime/gm.js';
 import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js';
+import { gotoRoom } from '../screens/common.js';
 import { tagParent } from '../jevil/common.js';
 import { scr_moveheart } from '../jevil/soul.js';
 
@@ -381,25 +382,166 @@ class SandboxController extends tagParent('obj_battlecontroller') {
 }
 defineObject('obj_sandboxcontroller', SandboxController);
 
-// ---------------------------------------------------------------- entry point
+// ---------------------------------------------------------------- practice mode
 
-export function startSandbox(params) {
-  if (params.has('seed')) random_set_seed(Number(params.get('seed')) || 0);
+// Bad Time Simulator style: dodge each attack of the real fight in order. Losing the whole
+// HP bar restarts the attack; surviving it moves on to the next one, up to the Final Chaos.
+const PRACTICE_COUNT = 16; // jattack 0..15
+export const PRACTICE_HP = [90, 45, 1];
+
+class PracticeController extends SandboxController {
+  create() {
+    super.create();
+    this.poolMax = 90;
+    this.pool = 90;
+    this.retries = 0;
+    this.failed = false;
+    this.finished = false;
+    this.banner = '';
+    this.bannerColor = 0xffffff;
+    this.bannerTimer = 0;
+    this.prevHp = null;
+    this.wait = 45;
+  }
+  begin() {
+    this.pool = this.poolMax;
+    this.failed = false;
+    for (let c = 1; c <= 3; c++) global.hp[c] = global.maxhp[c];
+    this.prevHp = global.hp.slice();
+    super.begin();
+  }
+  step() {
+    if (keyboard_check_pressed(vk.escape)) return this.quit();
+    if (this.finished) {
+      if (button1_p()) this.quit();
+      return;
+    }
+    // A hit costs the biggest HP loss of any party member that frame (bombs hit everyone at once).
+    if (this.prevHp && this.phase === 'bullets' && !this.failed) {
+      let lost = 0;
+      for (let c = 1; c <= 3; c++) lost = Math.max(lost, this.prevHp[c] - global.hp[c]);
+      if (lost > 0) {
+        this.pool = Math.max(0, this.pool - lost);
+        if (this.pool <= 0) this.fail();
+      }
+    }
+    // The party never falls, so Jevil keeps targeting the way he does in the real fight.
+    for (let i = 0; i < 3; i++) {
+      const c = global.char[i];
+      if (global.hp[c] <= 0) S.scr_revive(i);
+      global.hp[c] = global.maxhp[c];
+    }
+    this.prevHp = global.hp.slice();
+    if (this.bannerTimer > 0) this.bannerTimer -= 1;
+    super.step();
+  }
+  input() {}
+  show(text, color, frames = 50) {
+    this.banner = text;
+    this.bannerColor = color;
+    this.bannerTimer = frames;
+  }
+  fail() {
+    this.failed = true;
+    snd_play('snd_hurt1');
+    this.show('TRY AGAIN', 0xff4040);
+    this.restart();
+  }
+  alarm2() {
+    super.alarm2();
+    this.wait = 45;
+    if (this.failed) {
+      this.retries += 1;
+      return;
+    }
+    if (this.attackIndex + 1 >= PRACTICE_COUNT) {
+      this.finished = true;
+      this.phase = 'done';
+      snd_play('snd_won');
+      return;
+    }
+    this.attackIndex += 1;
+    snd_play('snd_great_shine');
+    this.show('CLEAR!', 0xffff00);
+  }
+  quit() {
+    if (this.realGameover) defineScript('scr_gameover', this.realGameover);
+    if (this.music) mus_stop(this.music);
+    S.startTitle();
+  }
+  drawEnd() {
+    const x = G.camX, y = G.camY;
+    const [, , name] = ATTACKS[this.attackIndex];
+    draw_set_halign(fa_left);
+    draw_set_font('fnt_mainbig');
+    draw_set_color(0xffffff);
+    draw_text(x + 40, y + 360, `ATTACK ${this.attackIndex + 1}/${PRACTICE_COUNT}`);
+    draw_set_color(0xffff00);
+    draw_text(x + 250, y + 360, name.toUpperCase());
+    // HP bar in the Bad Time Simulator colours: yellow over red.
+    draw_set_color(0xffffff);
+    draw_text(x + 40, y + 400, 'HP');
+    const bx = x + 90, by = y + 404, bw = 180;
+    draw_set_color(0xff0000);
+    draw_rectangle(bx, by, bx + bw, by + 20, false);
+    draw_set_color(0xffff00);
+    if (this.pool > 0) draw_rectangle(bx, by, bx + Math.max(1, Math.round(bw * this.pool / this.poolMax)), by + 20, false);
+    draw_set_color(0xffffff);
+    draw_text(x + 290, y + 400, `${Math.ceil(this.pool)} / ${this.poolMax}`);
+    draw_text(x + 460, y + 400, `RETRIES ${this.retries}`);
+    draw_set_font('fnt_main');
+    draw_set_color(0x808080);
+    draw_text(x + 40, y + 446, 'ESC: QUIT TO TITLE');
+    draw_set_halign(fa_center);
+    draw_set_font('fnt_mainbig');
+    if (this.finished) {
+      draw_set_alpha(0.75);
+      draw_set_color(0);
+      draw_rectangle(x + 120, y + 120, x + 520, y + 300, false);
+      draw_set_alpha(1);
+      draw_set_color(0xffff00);
+      draw_text(x + 320, y + 150, 'PRACTICE COMPLETE!');
+      draw_set_color(0xffffff);
+      draw_text(x + 320, y + 200, `RETRIES: ${this.retries}`);
+      draw_text(x + 320, y + 250, 'PRESS Z');
+    } else if (this.bannerTimer > 0) {
+      draw_set_alpha(Math.min(1, this.bannerTimer / 15));
+      draw_set_color(this.bannerColor);
+      draw_text(x + 320, y + 290, this.banner);
+      draw_set_alpha(1);
+    }
+    draw_set_halign(fa_left);
+  }
+}
+defineObject('obj_practicecontroller', PracticeController);
+
+export function startPractice({ start = 0, hp = 90 } = {}) {
+  gotoRoom();
+  const ctl = setupArena('obj_practicecontroller', Math.max(0, Math.min(PRACTICE_COUNT - 1, start)));
+  ctl.poolMax = ctl.pool = hp;
+  ctl.toggleMusic();
+}
+
+// ---------------------------------------------------------------- entry points
+
+// Jevil, the party stand-ins and the background, driven by the given controller object.
+function setupArena(controllerName, attackIndex) {
   setupGlobals();
   installFallbacks();
-  // The sandbox never ends: a game over just refills the party.
+  // Neither mode ever ends in a game over: it just refills the party. The real script is
+  // put back when practice returns to the title.
+  const realGameover = 'scr_gameover' in S ? S.scr_gameover : null;
   defineScript('scr_gameover', () => {
     for (let c = 1; c <= 3; c++) global.hp[c] = global.maxhp[c];
     for (let i = 0; i < 3; i++) S.scr_revive(i);
   });
 
   const bg = instance_create(0, 0, 'obj_jokerbg_triangle_real');
-  bg.on = 1;
+  bg.on = G.settings?.simplify ? 0 : 1;
   // The real controller exists before the monster (it creates it), so it steps first.
-  const ctl = instance_create(0, 0, 'obj_sandboxcontroller');
-  const want = Number(params.get('attack') ?? 0);
-  const idx = ATTACKS.findIndex(a => a[0] === want);
-  ctl.attackIndex = idx >= 0 ? idx : 0;
+  const ctl = instance_create(0, 0, controllerName);
+  ctl.realGameover = realGameover;
+  ctl.attackIndex = attackIndex;
   // scr_encountersetup(25) positions
   const heromake = [[80, 100], [90, 150], [100, 210]];
   for (let i = 0; i < 3; i++) {
@@ -418,6 +560,14 @@ export function startSandbox(params) {
   } catch (e) {
     console.warn('obj_joker Other_22 / scr_monstersetup failed; using default JEVIL stats', e);
   }
+  return ctl;
+}
+
+export function startSandbox(params) {
+  if (params.has('seed')) random_set_seed(Number(params.get('seed')) || 0);
+  const want = Number(params.get('attack') ?? 0);
+  const idx = ATTACKS.findIndex(a => a[0] === want);
+  const ctl = setupArena('obj_sandboxcontroller', idx >= 0 ? idx : 0);
   if (params.has('god')) ctl.god = true;
   if (params.has('music')) ctl.toggleMusic();
   window.sandbox = ctl;
