@@ -478,8 +478,31 @@ export function virtualKey(k, isDown) {
   }
 }
 
+// Gamepads (standard mapping) act like the keyboard: A / Cross = Z, B / Circle = X,
+// Y / Triangle = C, Start = Enter, D-pad or left stick = arrows.
+const PAD_BUTTONS = [[0, 90], [1, 88], [3, 67], [9, 13], [12, 38], [13, 40], [14, 37], [15, 39]];
+const STICK_DEADZONE = 0.5;
+let padHeld = new Set();
+function pollGamepads() {
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  const now = new Set();
+  for (const p of pads) {
+    if (!p || !p.connected) continue;
+    for (const [b, k] of PAD_BUTTONS) if (p.buttons[b]?.pressed) now.add(k);
+    const ax = p.axes[0] || 0, ay = p.axes[1] || 0;
+    if (ax < -STICK_DEADZONE) now.add(37);
+    if (ax > STICK_DEADZONE) now.add(39);
+    if (ay < -STICK_DEADZONE) now.add(38);
+    if (ay > STICK_DEADZONE) now.add(40);
+  }
+  for (const k of now) if (!padHeld.has(k)) virtualKey(k, true);
+  for (const k of padHeld) if (!now.has(k)) virtualKey(k, false);
+  padHeld = now;
+}
+
 // Called once per frame before Begin Step (obj_time does the same in the game).
 export function inputLatch() {
+  pollGamepads();
   pressed = new Set(pressedRaw);
   released = new Set(releasedRaw);
   held = new Set([...down, ...pressedRaw]);

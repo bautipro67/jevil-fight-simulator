@@ -1,5 +1,5 @@
 import { loadAssets, loadAudioInBackground } from './runtime/assets.js';
-import { audioInit, audioPreload } from './runtime/audio.js';
+import { audioInit, audioPreload, audioState } from './runtime/audio.js';
 import * as gm from './runtime/gm.js';
 import { G } from './runtime/gm.js';
 import { setupTouch } from './touch.js';
@@ -102,6 +102,15 @@ async function boot() {
   addEventListener('pointerdown', audioInit, { once: true });
   loadAudioInBackground();
   audioPreload().catch(e => console.warn(e));
+  // Gamepad buttons don't count as a gesture for audio, so tell gamepad players how to get sound.
+  const hint = document.getElementById('soundhint');
+  if (hint) {
+    const t = setInterval(() => {
+      const suspended = audioState() === 'suspended';
+      hint.hidden = !suspended;
+      if (!suspended) clearInterval(t);
+    }, 500);
+  }
   await start();
   loop();
 }

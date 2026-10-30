@@ -14,6 +14,9 @@ export function audioInit() {
   return ctx.resume();
 }
 
+// 'suspended' until the first key press, click or tap ('none' before audioInit).
+export const audioState = () => (ctx ? ctx.state : 'none');
+
 export function setMasterVolume(v) {
   if (master) master.gain.value = v;
 }

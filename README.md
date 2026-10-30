@@ -22,6 +22,8 @@ Play the Jevil boss fight from **DELTARUNE Chapter 1** for free in your browser,
 | X / Shift | Cancel |
 | Arrow keys | Move |
 
+**Gamepad** (Xbox, PlayStation, Switch): A / Cross confirms, B / Circle cancels, D-pad or left stick moves, Start confirms. Browsers only turn on sound after a click or key press, so click the page once.
+
 ## Run it locally
 
 ```
