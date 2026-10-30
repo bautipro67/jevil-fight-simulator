@@ -452,15 +452,66 @@ function keyVk(e) {
   return e.keyCode;
 }
 
+// Remappable controls. Each action has keyboard key codes and gamepad buttons (standard
+// mapping: 0 A, 1 B, 2 X, 3 Y, 4 LB, 5 RB, 6 LT, 7 RT, 8 Select, 9 Start, 12-15 D-pad).
+export const DEFAULT_CONTROLS = {
+  confirm: { keys: [90, 13], pad: [0, 9] },
+  cancel: { keys: [88, 16], pad: [1] },
+  menu: { keys: [67, 17], pad: [3] },
+  up: { keys: [38], pad: [12] },
+  down: { keys: [40], pad: [13] },
+  left: { keys: [37], pad: [14] },
+  right: { keys: [39], pad: [15] },
+};
+const cloneControls = c => Object.fromEntries(Object.entries(c).map(([a, v]) => [a, { keys: [...v.keys], pad: [...v.pad] }]));
+export const controls = cloneControls(DEFAULT_CONTROLS);
+export function setControls(c) {
+  const d = cloneControls(DEFAULT_CONTROLS);
+  for (const a of Object.keys(d)) {
+    const v = c?.[a];
+    controls[a] = v && Array.isArray(v.keys) && Array.isArray(v.pad) ? { keys: [...v.keys], pad: [...v.pad] } : d[a];
+  }
+}
+
+// Gamepad buttons and the left stick show up in the key state as pseudo key codes.
+const PAD = 1000, STICK = 1100; // PAD + button index; STICK + 0..3 = up, down, left, right
+const STICK_DIRS = ['up', 'down', 'left', 'right'];
+// On-screen controls press actions directly, so they keep working after any rebinding.
+const ACTION_CODE = { confirm: 1200, cancel: 1201, menu: 1202, up: 1203, down: 1204, left: 1205, right: 1206 };
+export const virtualAction = (a, isDown) => virtualKey(ACTION_CODE[a], isDown);
+const codesOf = a => {
+  const c = controls[a];
+  const out = [...c.keys, ...c.pad.map(b => PAD + b), ACTION_CODE[a]];
+  const s = STICK_DIRS.indexOf(a);
+  if (s >= 0) out.push(STICK + s);
+  return out;
+};
+
+// Rebinding: the next key or gamepad button goes to the callback instead of the game.
+let capture = null;
+const swallowed = new Set();
+export function captureNextInput(cb) { capture = cb; }
+export function cancelCapture() { capture = null; }
+
 export function inputAttach(target = window) {
   target.addEventListener('keydown', e => {
     const k = keyVk(e);
+    if (capture) {
+      const cb = capture;
+      capture = null;
+      swallowed.add(k);
+      e.preventDefault();
+      cb(k === 27 ? { type: 'cancel' } : { type: 'key', code: k });
+      return;
+    }
+    if (swallowed.has(k)) return;
     if (!down.has(k)) pressedRaw.add(k);
     down.add(k);
     if ([37, 38, 39, 40, 32, 13].includes(k) || (k >= 112 && k <= 115)) e.preventDefault();
   });
   target.addEventListener('keyup', e => {
     const k = keyVk(e);
+    if (swallowed.delete(k)) return;
     down.delete(k);
     releasedRaw.add(k);
   });
@@ -478,9 +529,6 @@ export function virtualKey(k, isDown) {
   }
 }
 
-// Gamepads (standard mapping) act like the keyboard: A / Cross = Z, B / Circle = X,
-// Y / Triangle = C, Start = Enter, D-pad or left stick = arrows.
-const PAD_BUTTONS = [[0, 90], [1, 88], [3, 67], [9, 13], [12, 38], [13, 40], [14, 37], [15, 39]];
 const STICK_DEADZONE = 0.5;
 let padHeld = new Set();
 function pollGamepads() {
@@ -488,15 +536,26 @@ function pollGamepads() {
   const now = new Set();
   for (const p of pads) {
     if (!p || !p.connected) continue;
-    for (const [b, k] of PAD_BUTTONS) if (p.buttons[b]?.pressed) now.add(k);
+    p.buttons.forEach((b, i) => { if (b?.pressed) now.add(PAD + i); });
     const ax = p.axes[0] || 0, ay = p.axes[1] || 0;
-    if (ax < -STICK_DEADZONE) now.add(37);
-    if (ax > STICK_DEADZONE) now.add(39);
-    if (ay < -STICK_DEADZONE) now.add(38);
-    if (ay > STICK_DEADZONE) now.add(40);
+    if (ay < -STICK_DEADZONE) now.add(STICK);
+    if (ay > STICK_DEADZONE) now.add(STICK + 1);
+    if (ax < -STICK_DEADZONE) now.add(STICK + 2);
+    if (ax > STICK_DEADZONE) now.add(STICK + 3);
   }
-  for (const k of now) if (!padHeld.has(k)) virtualKey(k, true);
-  for (const k of padHeld) if (!now.has(k)) virtualKey(k, false);
+  for (const k of now) {
+    if (padHeld.has(k)) continue;
+    if (capture && k < STICK) {
+      const cb = capture;
+      capture = null;
+      swallowed.add(k);
+      cb({ type: 'pad', code: k - PAD });
+    } else if (!swallowed.has(k)) virtualKey(k, true);
+  }
+  for (const k of padHeld) {
+    if (now.has(k)) continue;
+    if (!swallowed.delete(k)) virtualKey(k, false);
+  }
   padHeld = now;
 }
 
@@ -514,23 +573,23 @@ const key = k => (typeof k === 'string' ? k.toUpperCase().charCodeAt(0) : k);
 export const keyboard_check = k => held.has(key(k));
 export const keyboard_check_pressed = k => pressed.has(key(k));
 export const keyboard_check_released = k => released.has(key(k));
-const any = (set, ks) => ks.some(k => set.has(k));
-export const button1_p = () => any(pressed, [90, 13]);
-export const button2_p = () => any(pressed, [88, 16]);
-export const button3_p = () => any(pressed, [67, 17]);
-export const button1_h = () => any(held, [90, 13]);
-export const button2_h = () => any(held, [88, 16]);
-export const button3_h = () => any(held, [67, 17]);
-export const button1_r = () => any(released, [90, 13]);
-export const button2_r = () => any(released, [88, 16]);
-export const left_p = () => pressed.has(37);
-export const right_p = () => pressed.has(39);
-export const up_p = () => pressed.has(38);
-export const down_p = () => pressed.has(40);
-export const left_h = () => held.has(37);
-export const right_h = () => held.has(39);
-export const up_h = () => held.has(38);
-export const down_h = () => held.has(40);
+const any = (set, a) => codesOf(a).some(k => set.has(k));
+export const button1_p = () => any(pressed, 'confirm');
+export const button2_p = () => any(pressed, 'cancel');
+export const button3_p = () => any(pressed, 'menu');
+export const button1_h = () => any(held, 'confirm');
+export const button2_h = () => any(held, 'cancel');
+export const button3_h = () => any(held, 'menu');
+export const button1_r = () => any(released, 'confirm');
+export const button2_r = () => any(released, 'cancel');
+export const left_p = () => any(pressed, 'left');
+export const right_p = () => any(pressed, 'right');
+export const up_p = () => any(pressed, 'up');
+export const down_p = () => any(pressed, 'down');
+export const left_h = () => any(held, 'left');
+export const right_h = () => any(held, 'right');
+export const up_h = () => any(held, 'up');
+export const down_h = () => any(held, 'down');
 
 // ---------------------------------------------------------------- drawing
 

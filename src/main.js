@@ -4,6 +4,11 @@ import * as gm from './runtime/gm.js';
 import { G } from './runtime/gm.js';
 import { setupTouch } from './touch.js';
 import { setupFullscreen } from './fullscreen.js';
+import { borderActive, drawBorder } from './border.js';
+import { loadSettings, applyVolume } from './settings.js';
+import './screens/controls.js';
+
+loadSettings();
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -18,13 +23,31 @@ G.debug.enabled = params.has('debug') || params.has('sandbox');
 if (setupTouch(params.has('touch'))) document.body.classList.add('touch');
 setupFullscreen();
 
+const screenBox = document.getElementById('screen');
+const borderCanvas = document.getElementById('border');
+
 function fit() {
   // On portrait touch screens the on-screen controls sit below the game.
   const reserve = document.body.classList.contains('touch') && innerHeight > innerWidth ? 200 : 0;
   const w = document.documentElement.clientWidth, h = innerHeight - reserve;
+  if (borderActive(w, h)) {
+    // 16:9 like DELTARUNE with borders: the game is 1440x1080 of 1920x1080.
+    const s = Math.min(w / 1920, h / 1080);
+    screenBox.style.width = 1920 * s + 'px';
+    screenBox.style.height = 1080 * s + 'px';
+    canvas.style.left = 240 * s + 'px';
+    canvas.style.width = 1440 * s + 'px';
+    canvas.style.height = 1080 * s + 'px';
+    borderCanvas.hidden = false;
+    return;
+  }
+  borderCanvas.hidden = true;
   const s = Math.max(1, Math.floor(Math.min(w / 640, h / 480)));
   const fs = Math.min(w / 640, h / 480);
   const scale = fs >= 1 ? s : fs;
+  screenBox.style.width = 640 * scale + 'px';
+  screenBox.style.height = 480 * scale + 'px';
+  canvas.style.left = '0px';
   canvas.style.width = 640 * scale + 'px';
   canvas.style.height = 480 * scale + 'px';
 }
@@ -55,6 +78,7 @@ function loop() {
       if (!G.paused || G.stepOnce) {
         G.stepOnce = false;
         gm.tick();
+        drawBorder();
       }
       acc -= STEP;
       n++;
@@ -98,6 +122,7 @@ async function boot() {
   // Audio stays suspended until the first key press or tap (browser autoplay rules);
   // sounds started before that begin playing once it resumes.
   audioInit();
+  applyVolume();
   addEventListener('keydown', audioInit, { once: true });
   addEventListener('pointerdown', audioInit, { once: true });
   loadAudioInBackground();

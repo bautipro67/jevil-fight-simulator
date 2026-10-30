@@ -58,6 +58,10 @@
   body.touch #stage { align-items: flex-start; padding-top: max(8px, env(safe-area-inset-top)); box-sizing: border-box; }
   @media (orientation: landscape) { body.touch #stage { align-items: center; padding-top: 0; } }
   canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; touch-action: none; }
+  #screen { position: relative; flex: none; }
+  #screen canvas { position: absolute; top: 0; left: 0; }
+  #border { width: 100%; height: 100%; }
+  #border[hidden] { display: none; }
   .hint { position: absolute; top: calc(100vh - 28px); left: 0; right: 0; text-align: center; font-size: 12px; color: #666; }
   body.touch .hint { display: none; }
   #about { max-width: 720px; margin: 0 auto; padding: 48px 16px 64px; }
@@ -74,10 +78,10 @@
     background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.3); }
   #touch .dpad span { position: absolute; width: 0; height: 0; border: 12px solid transparent; opacity: .55; }
   #touch .dpad span.on { opacity: 1; }
-  #touch .dpad [data-dir="38"] { left: 63px; top: 10px; border-bottom: 16px solid #fff; border-top: 0; }
-  #touch .dpad [data-dir="40"] { left: 63px; bottom: 10px; border-top: 16px solid #fff; border-bottom: 0; }
-  #touch .dpad [data-dir="37"] { top: 63px; left: 10px; border-right: 16px solid #fff; border-left: 0; }
-  #touch .dpad [data-dir="39"] { top: 63px; right: 10px; border-left: 16px solid #fff; border-right: 0; }
+  #touch .dpad [data-dir="up"] { left: 63px; top: 10px; border-bottom: 16px solid #fff; border-top: 0; }
+  #touch .dpad [data-dir="down"] { left: 63px; bottom: 10px; border-top: 16px solid #fff; border-bottom: 0; }
+  #touch .dpad [data-dir="left"] { top: 63px; left: 10px; border-right: 16px solid #fff; border-left: 0; }
+  #touch .dpad [data-dir="right"] { top: 63px; right: 10px; border-left: 16px solid #fff; border-right: 0; }
   #touch .btn { width: 72px; height: 72px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
     color: #fff; font: bold 22px monospace; background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.35); }
   #touch .btn small { font: 10px sans-serif; opacity: .7; }
@@ -88,7 +92,10 @@
 </head>
 <body>
 <main id="stage">
-  <canvas id="game" width="640" height="480" aria-label="Jevil Fight Simulator game"></canvas>
+  <div id="screen">
+    <canvas id="border" width="960" height="540" hidden></canvas>
+    <canvas id="game" width="640" height="480" aria-label="Jevil Fight Simulator game"></canvas>
+  </div>
   <div class="hint">Scroll down for controls and info</div>
   <div id="soundhint" hidden>🔇 Click or press any key to turn on sound</div>
   <button id="fullscreen" type="button" title="Fullscreen (F)" aria-label="Fullscreen (F)" hidden>
@@ -97,9 +104,9 @@
     <span>FULLSCREEN</span>
   </button>
   <div id="touch" hidden>
-    <div class="dpad" aria-label="Move"><span data-dir="38"></span><span data-dir="40"></span><span data-dir="37"></span><span data-dir="39"></span></div>
-    <div class="btn z" data-key="90">Z<small>OK</small></div>
-    <div class="btn x" data-key="88">X<small>BACK</small></div>
+    <div class="dpad" aria-label="Move"><span data-dir="up"></span><span data-dir="down"></span><span data-dir="left"></span><span data-dir="right"></span></div>
+    <div class="btn z" data-action="confirm">Z<small>OK</small></div>
+    <div class="btn x" data-action="cancel">X<small>BACK</small></div>
   </div>
 </main>
 
@@ -111,6 +118,7 @@
   <h2>Controls</h2>
   <p><kbd>Z</kbd> or <kbd>Enter</kbd>: confirm &nbsp; <kbd>X</kbd> or <kbd>Shift</kbd>: cancel &nbsp; <kbd>Arrow keys</kbd>: move. On phones, use the on-screen pad and buttons.</p>
   <p><strong>Gamepad:</strong> plug in an Xbox, PlayStation or Switch controller and press a button. <kbd>A</kbd>/<kbd>Cross</kbd>: confirm &nbsp; <kbd>B</kbd>/<kbd>Circle</kbd>: cancel &nbsp; D-pad or left stick: move &nbsp; <kbd>Start</kbd>: confirm. Click the page or press a key once to turn on the sound (browsers require it).</p>
+  <p><strong>Remap the buttons</strong> in OPTIONS &rarr; CONTROLS (keyboard and gamepad). OPTIONS also has the volume and the <strong>screen border</strong> (Card Castle, simple or off), shown around the game on wide screens like in DELTARUNE.</p>
 
   <h2>Practice mode</h2>
   <p>Choose <strong>PRACTICE</strong> on the title screen (or open <a href="?practice">practice mode</a> directly) to dodge Jevil's 16 attacks in order, Bad Time Simulator style. Lose your whole HP bar and the attack restarts; survive it and you move on to the next one, all the way to the Final Chaos. You can start from any attack and pick 90 HP, 45 HP or 1 HP (no hit).</p>

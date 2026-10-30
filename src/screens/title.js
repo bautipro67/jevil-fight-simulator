@@ -3,30 +3,36 @@
 // ?practice[&attack=N][&hp=N] starts practice mode.
 import {
   G, global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, objectExists,
-  draw_sprite_ext, draw_set_color, draw_set_font, draw_set_alpha, draw_rectangle, draw_text,
+  draw_sprite_ext, draw_set_color, draw_set_font, draw_set_alpha, draw_rectangle, draw_text, controls,
 } from '../runtime/gm.js';
-import { snd_init, snd_play, mus_loop_ext, mus_volume, mus_stop, setMasterVolume } from '../runtime/audio.js';
+import { snd_init, snd_play, mus_loop_ext, mus_volume, mus_stop } from '../runtime/audio.js';
 import { startBattle } from '../battle/setup.js';
 import { startPractice, PRACTICE_HP } from '../debug/sandbox.js';
 import { gotoRoom, fadeOut, centerText } from './common.js';
+import { saveSettings, applyVolume, BORDERS } from '../settings.js';
+import { openControls, keyName } from './controls.js';
 import './gameover.js';
 import './ending.js';
 
-// Options are remembered in this browser (when storage is available).
-const SETTINGS_KEY = 'jevil-sim-settings';
-function loadSettings() {
-  const defaults = { simplify: false, intro: true, easy: false, volume: 1 };
-  try {
-    return { ...defaults, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
-  } catch (e) {
-    return defaults;
+// Dark panel over the title art, behind the OPTIONS and CONTROLS lists.
+class Panel extends Instance {
+  create() {
+    this.depth = -10;
+    this.title = '';
+    this.alpha = 0;
+  }
+  step() { this.alpha = Math.min(0.9, this.alpha + 0.15); }
+  draw() {
+    draw_set_alpha(this.alpha);
+    draw_set_color(0);
+    draw_rectangle(0, 0, 639, 479, false);
+    draw_set_alpha(1);
+    draw_set_font('fnt_mainbig');
+    draw_set_color(0xffffff);
+    centerText(320, 34, this.title);
   }
 }
-function saveSettings() {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(G.settings)); } catch (e) { /* not saved */ }
-}
-G.settings = G.settings || loadSettings();
-setMasterVolume(G.settings.volume);
+defineObject('obj_sim_panel', Panel);
 
 class Title extends Instance {
   create() {
@@ -50,18 +56,20 @@ class Title extends Instance {
     draw_set_font('fnt_mainbig');
     draw_set_color(0xffff00);
     draw_set_alpha(a * (0.6 + Math.sin(t / 8) * 0.4));
-    if (!G.titleCompact) centerText(320, 284, 'CHAOS, CHAOS!'); // hidden behind the longer OPTIONS list
+    centerText(320, 284, 'CHAOS, CHAOS!');
     draw_set_alpha(1);
     draw_set_font('fnt_main');
     draw_set_color(0x808080);
-    centerText(320, 440, 'Z / ENTER: CONFIRM    X / SHIFT: CANCEL    ARROWS: MOVE');
+    const c = controls;
+    const moves = [c.up, c.down, c.left, c.right].map(a => keyName(a.keys[0]));
+    const move = moves.join('') === 'UPDOWNLEFTRIGHT' ? 'ARROWS' : moves.join('/');
+    centerText(320, 440, `${keyName(c.confirm.keys[0])}: CONFIRM    ${keyName(c.cancel.keys[0])}: CANCEL    ${move}: MOVE`);
     centerText(320, 458, 'DELTARUNE (C) TOBY FOX.  UNOFFICIAL FAN SIMULATOR.');
   }
 }
 defineObject('obj_sim_title', Title);
 
 export function startTitle() {
-  G.titleCompact = false;
   const p = new URLSearchParams(location.search);
   if (p.has('practice')) {
     startPractice({ start: (Number(p.get('attack')) || 1) - 1, hp: Number(p.get('hp')) || 90 });
@@ -131,36 +139,64 @@ function practiceMenu(music) {
 // Volume in 10% steps; Z cycles, left / right adjust.
 function setVolume(v) {
   G.settings.volume = Math.round(Math.max(0, Math.min(1, v)) * 10) / 10;
-  setMasterVolume(G.settings.volume);
+  applyVolume();
   saveSettings();
   snd_play('snd_select');
 }
 
-function optionsMenu(music) {
-  G.titleCompact = true;
-  const menu = instance_create(MENU_X, MENU_Y - 28, 'obj_sim_heartmenu');
-  const back = m => { G.titleCompact = false; saveSettings(); instance_destroy(m); mainMenu(music, 2); };
+// The screen border (see src/border.js); the layout changes, so the page is re-fitted.
+function setBorder(dir) {
+  const i = BORDERS.indexOf(G.settings.border);
+  G.settings.border = BORDERS[(i + dir + BORDERS.length) % BORDERS.length];
+  saveSettings();
+  dispatchEvent(new Event('resize'));
+}
+
+function optionsMenu(music, cur = 0, panel = null) {
+  panel = panel || instance_create(0, 0, 'obj_sim_panel');
+  panel.title = 'OPTIONS';
+  const menu = instance_create(150, 100, 'obj_sim_heartmenu');
+  menu.depth = -20;
+  const back = m => {
+    saveSettings();
+    instance_destroy(m);
+    instance_destroy(panel);
+    mainMenu(music, 2);
+  };
   menu.setup([
     () => 'VOLUME: < ' + Math.round(G.settings.volume * 100) + '% >',
+    () => 'BORDER: < ' + G.settings.border + ' >',
     () => 'EASY MODE: ' + (G.settings.easy ? 'ON' : 'OFF'),
     () => 'INTRO: ' + (G.settings.intro ? 'ON' : 'OFF'),
     () => 'SIMPLIFY VFX: ' + (G.settings.simplify ? 'ON' : 'OFF'),
+    'CONTROLS',
     'BACK',
   ], (i, m) => {
-    if (i == 4) return back(m);
+    if (i == 6) return back(m);
+    if (i == 5) {
+      instance_destroy(m);
+      panel.title = 'CONTROLS';
+      openControls(() => optionsMenu(music, 5, panel));
+      return;
+    }
     if (i == 0) setVolume(G.settings.volume >= 1 ? 0 : G.settings.volume + 0.1);
-    if (i == 1) G.settings.easy = !G.settings.easy;
-    if (i == 2) G.settings.intro = !G.settings.intro;
-    if (i == 3) {
+    if (i == 1) setBorder(1);
+    if (i == 2) G.settings.easy = !G.settings.easy;
+    if (i == 3) G.settings.intro = !G.settings.intro;
+    if (i == 4) {
       G.settings.simplify = !G.settings.simplify;
       global.flag[8] = G.settings.simplify ? 1 : 0;
     }
     saveSettings();
     m.done = false;
     m.buffer = 1;
-  }, 'fnt_mainbig', 27);
+  }, 'fnt_mainbig', 36);
+  menu.cur = cur;
   menu.onBack = back;
-  menu.onAdjust = (i, dir) => { if (i == 0) setVolume(G.settings.volume + dir * 0.1); };
+  menu.onAdjust = (i, dir) => {
+    if (i == 0) setVolume(G.settings.volume + dir * 0.1);
+    if (i == 1) setBorder(dir);
+  };
 }
 defineScript('startTitle', startTitle);
 
