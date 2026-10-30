@@ -1,0 +1,14 @@
+# Extra assets for the battle system (spr:/snd:/font:/text: per line)
+spr:spr_attack_cut1
+spr:spr_attack_hit1
+spr:spr_ralsei_shock
+spr:spr_susier_wall
+spr:spr_savepoint
+spr:IMAGE_LOGO
+spr:IMAGE_LOGO_CENTER
+spr:IMAGE_SOUL_BLUR
+snd:snd_weaponpull_fast
+snd:snd_cantselect
+text:^obj_writer
+text:^DEVICE_FAILURE
+text:^DEVICE_CHOICE

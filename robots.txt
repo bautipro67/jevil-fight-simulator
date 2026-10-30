@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bautipro67.github.io/jevil-fight-simulator/sitemap.xml

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jevil Fight Simulator – Play the DELTARUNE Jevil Boss Battle Online</title>
+<meta name="description" content="Play the Jevil boss fight from DELTARUNE Chapter 1 free in your browser. Every attack, Pirouette, Hypnosis, TP and Final Chaos, ported from the original game. Works on PC and mobile.">
+<meta name="keywords" content="jevil fight simulator, jevil simulator, jevil boss fight, deltarune jevil, deltarune fight simulator, jevil battle, chaos chaos, deltarune online, deltarune fangame">
+<link rel="canonical" href="https://bautipro67.github.io/jevil-fight-simulator/">
+<meta name="theme-color" content="#000000">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jevil Fight Simulator">
+<meta property="og:description" content="Fight Jevil from DELTARUNE Chapter 1 right in your browser. CHAOS, CHAOS!">
+<meta property="og:url" content="https://bautipro67.github.io/jevil-fight-simulator/">
+<meta property="og:image" content="https://bautipro67.github.io/jevil-fight-simulator/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Jevil Fight Simulator">
+<meta name="twitter:description" content="Fight Jevil from DELTARUNE Chapter 1 right in your browser. CHAOS, CHAOS!">
+<meta name="twitter:image" content="https://bautipro67.github.io/jevil-fight-simulator/og.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Jevil Fight Simulator",
+  "description": "Fan-made browser simulator of the Jevil boss fight from DELTARUNE Chapter 1.",
+  "url": "https://bautipro67.github.io/jevil-fight-simulator/",
+  "image": "https://bautipro67.github.io/jevil-fight-simulator/og.png",
+  "genre": ["Bullet hell", "RPG", "Boss fight"],
+  "gamePlatform": ["Web browser", "PC", "Mobile"],
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  html, body { margin: 0; background: #000; color: #ddd; overflow-x: hidden; }
+  body { font: 15px/1.6 system-ui, sans-serif; }
+  #stage { height: 100vh; height: 100dvh; display: flex; align-items: center; justify-content: center; }
+  body.touch #stage { align-items: flex-start; padding-top: max(8px, env(safe-area-inset-top)); box-sizing: border-box; }
+  @media (orientation: landscape) { body.touch #stage { align-items: center; padding-top: 0; } }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; touch-action: none; }
+  .hint { position: absolute; top: calc(100vh - 28px); left: 0; right: 0; text-align: center; font-size: 12px; color: #666; }
+  body.touch .hint { display: none; }
+  #about { max-width: 720px; margin: 0 auto; padding: 48px 16px 64px; }
+  #about h1 { color: #fff; font-size: 28px; margin: 0 0 8px; }
+  #about h2 { color: #fff; font-size: 18px; margin: 28px 0 8px; }
+  #about a { color: #ffff40; }
+  #about kbd { background: #222; border: 1px solid #444; border-radius: 4px; padding: 1px 6px; font-size: 13px; }
+  #about .small { color: #888; font-size: 13px; }
+
+  #touch { position: fixed; inset: 0; pointer-events: none; user-select: none; -webkit-user-select: none; }
+  #touch[hidden] { display: none; }
+  #touch .dpad, #touch .btn { pointer-events: auto; touch-action: none; position: fixed; -webkit-tap-highlight-color: transparent; }
+  #touch .dpad { left: 20px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 150px; height: 150px; border-radius: 50%;
+    background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.3); }
+  #touch .dpad span { position: absolute; width: 0; height: 0; border: 12px solid transparent; opacity: .55; }
+  #touch .dpad span.on { opacity: 1; }
+  #touch .dpad [data-dir="38"] { left: 63px; top: 10px; border-bottom: 16px solid #fff; border-top: 0; }
+  #touch .dpad [data-dir="40"] { left: 63px; bottom: 10px; border-top: 16px solid #fff; border-bottom: 0; }
+  #touch .dpad [data-dir="37"] { top: 63px; left: 10px; border-right: 16px solid #fff; border-left: 0; }
+  #touch .dpad [data-dir="39"] { top: 63px; right: 10px; border-left: 16px solid #fff; border-right: 0; }
+  #touch .btn { width: 72px; height: 72px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff; font: bold 22px monospace; background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.35); }
+  #touch .btn small { font: 10px sans-serif; opacity: .7; }
+  #touch .btn.on { background: rgba(255,255,64,.35); }
+  #touch .z { right: 20px; bottom: calc(96px + env(safe-area-inset-bottom)); border-color: #ffff40; }
+  #touch .x { right: 104px; bottom: calc(24px + env(safe-area-inset-bottom)); }
+</style>
+</head>
+<body>
+<main id="stage">
+  <canvas id="game" width="640" height="480" aria-label="Jevil Fight Simulator game"></canvas>
+  <div class="hint">Scroll down for controls and info</div>
+</main>
+
+<div id="touch" hidden>
+  <div class="dpad" aria-label="Move"><span data-dir="38"></span><span data-dir="40"></span><span data-dir="37"></span><span data-dir="39"></span></div>
+  <div class="btn z" data-key="90">Z<small>OK</small></div>
+  <div class="btn x" data-key="88">X<small>BACK</small></div>
+</div>
+
+<section id="about">
+  <h1>Jevil Fight Simulator</h1>
+  <p>Play the Jevil boss fight from <strong>DELTARUNE Chapter 1</strong> for free, right in your browser, on PC or mobile. No download needed. Fight with Kris, Susie and Ralsei, dodge all of Jevil's attacks with your SOUL, use Pirouette and Hypnosis to tire him out, and survive the Final Chaos. CHAOS, CHAOS!</p>
+  <p>The battle logic is ported from the original game, so the attacks, damage, TP and ACTs work like the real fight. Turn on <strong>Easy Mode</strong> on the title screen to take half damage while you practice.</p>
+
+  <h2>Controls</h2>
+  <p><kbd>Z</kbd> or <kbd>Enter</kbd>: confirm &nbsp; <kbd>X</kbd> or <kbd>Shift</kbd>: cancel &nbsp; <kbd>Arrow keys</kbd>: move. On phones, use the on-screen pad and buttons.</p>
+
+  <h2>Practice a single attack</h2>
+  <p>Open <a href="?sandbox&amp;attack=0">sandbox mode</a> to repeat any of Jevil's attacks: press <kbd>[</kbd> and <kbd>]</kbd> to switch attacks and <kbd>I</kbd> for invincibility.</p>
+
+  <h2>Credits</h2>
+  <p class="small">DELTARUNE and all its characters, graphics, music and sounds are © Toby Fox. This is a free, non-commercial fan project, not affiliated with Toby Fox or 8-4. If you enjoy it, <a href="https://deltarune.com">get the real game</a>. Source code: <a href="https://github.com/bautipro67/jevil-fight-simulator">GitHub</a>.</p>
+</section>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

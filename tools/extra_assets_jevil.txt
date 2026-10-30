@@ -1,0 +1,4 @@
+# Extra assets for Jevil and the bullet phase (spr:/snd:/font:/text: per line)
+spr:spr_dodgeheartmask
+snd:snd_shadowpendant
+snd:snd_birdtweet
