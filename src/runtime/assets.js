@@ -3,6 +3,8 @@
 export const assets = { sprites: {}, fonts: {}, sounds: {}, soundData: {}, text: {}, music: {} };
 
 const BASE = new URL('../../assets/', import.meta.url).href;
+// The deploy version (?v=, see tools/stamp_version.py) so assets are never mixed across deploys.
+const V = new URL(import.meta.url).search;
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {
@@ -14,13 +16,13 @@ function loadImage(url) {
 }
 
 async function json(path) {
-  const r = await fetch(BASE + path);
+  const r = await fetch(BASE + path + V);
   if (!r.ok) throw new Error('failed to load ' + path);
   return r.json();
 }
 
 async function bytes(path) {
-  const r = await fetch(BASE + path);
+  const r = await fetch(BASE + path + V);
   if (!r.ok) throw new Error('failed to load ' + path);
   return r.arrayBuffer();
 }
@@ -36,8 +38,8 @@ export async function loadAssets(onProgress = () => {}) {
   assets.sounds = sounds;
   const pageIds = [...new Set(Object.values(sprites).map(s => s.p))];
   const jobs = [
-    ...pageIds.map(p => loadImage(BASE + 'atlas' + p + '.png').then(img => [p, img])),
-    ...Object.entries(fonts).map(([name, f]) => loadImage(BASE + 'fonts/' + name + '.png').then(img => {
+    ...pageIds.map(p => loadImage(BASE + 'atlas' + p + '.png' + V).then(img => [p, img])),
+    ...Object.entries(fonts).map(([name, f]) => loadImage(BASE + 'fonts/' + name + '.png' + V).then(img => {
       f.name = name;
       f.type = 'atlas';
       f.img = img;

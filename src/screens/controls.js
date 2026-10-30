@@ -3,9 +3,9 @@ import {
   Instance, defineObject, instance_create, instance_destroy, controls, setControls, captureNextInput, cancelCapture,
   up_p, down_p, button1_p, button2_p, draw_set_font, draw_set_color, draw_set_alpha, draw_set_halign, draw_text,
   draw_sprite_ext, fa_left, fa_center,
-} from '../runtime/gm.js';
-import { snd_play } from '../runtime/audio.js';
-import { saveControls } from '../settings.js';
+} from '../runtime/gm.js?v=20261030222208';
+import { snd_play } from '../runtime/audio.js?v=20261030222208';
+import { saveControls } from '../settings.js?v=20261030222208';
 
 const KEY_NAMES = {
   8: 'BACKSPACE', 9: 'TAB', 13: 'ENTER', 16: 'SHIFT', 17: 'CTRL', 18: 'ALT', 32: 'SPACE',

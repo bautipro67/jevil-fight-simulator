@@ -121,6 +121,29 @@
   <p class="small">DELTARUNE and all its characters, graphics, music and sounds are © Toby Fox. This is a free, non-commercial fan project, not affiliated with Toby Fox or 8-4. If you enjoy it, <a href="https://deltarune.com">get the real game</a>. Source code: <a href="https://github.com/bautipro67/jevil-fight-simulator">GitHub</a>.</p>
 </section>
 
-<script type="module" src="src/main.js"></script>
+<script>
+  window.APP_VERSION = '20261030222208';
+  // A browser may keep an old copy of this page for a few minutes after a deploy:
+  // if a newer version is out, load it (at most once per version and visit).
+  (() => {
+    const here = new URL(location.href);
+    if (here.searchParams.get('v') === window.APP_VERSION) {
+      here.searchParams.delete('v');
+      history.replaceState(null, '', here.href);
+    }
+    fetch('version.json', { cache: 'no-store' }).then(r => r.json()).then(d => {
+      if (!d.v || d.v === window.APP_VERSION) return;
+      const key = 'jevil-reload-' + d.v;
+      try {
+        if (sessionStorage.getItem(key)) return;
+        sessionStorage.setItem(key, '1');
+      } catch (e) { return; }
+      const u = new URL(location.href);
+      u.searchParams.set('v', d.v);
+      location.replace(u.href);
+    }).catch(() => {});
+  })();
+</script>
+<script type="module" src="src/main.js?v=20261030222208"></script>
 </body>
 </html>

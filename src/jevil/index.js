@@ -1,14 +1,14 @@
 // Imports every Jevil / bullet-phase module so their objects and scripts get registered.
-import './common.js';
-import './bullets.js';
-import './board.js';
-import './soul.js';
-import './attacks/bombs.js';
-import './attacks/scythes.js';
-import './attacks/carousel.js';
-import './attacks/spades.js';
-import './attacks/clubs.js';
-import './attacks/diamonds.js';
-import './attacks/teleport.js';
-import './attacks/controller.js';
-import './joker.js';
+import './common.js?v=20261030222208';
+import './bullets.js?v=20261030222208';
+import './board.js?v=20261030222208';
+import './soul.js?v=20261030222208';
+import './attacks/bombs.js?v=20261030222208';
+import './attacks/scythes.js?v=20261030222208';
+import './attacks/carousel.js?v=20261030222208';
+import './attacks/spades.js?v=20261030222208';
+import './attacks/clubs.js?v=20261030222208';
+import './attacks/diamonds.js?v=20261030222208';
+import './attacks/teleport.js?v=20261030222208';
+import './attacks/controller.js?v=20261030222208';
+import './joker.js?v=20261030222208';

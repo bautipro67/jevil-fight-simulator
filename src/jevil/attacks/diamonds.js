@@ -1,8 +1,8 @@
 // Diamond releases (jattack 6, 14): obj_dbullet_vert; plus obj_dbullet_maker (unused by Jevil).
 // Both run their logic in Draw, like the original.
-import { defineObject, instance_create, instance_destroy, instance_exists, point_direction, draw_sprite_ext } from '../rt.js';
-import { BulletParent, CollideBullet } from '../bullets.js';
-import { heartRef, move_towards_point, view_y, lt } from '../common.js';
+import { defineObject, instance_create, instance_destroy, instance_exists, point_direction, draw_sprite_ext } from '../rt.js?v=20261030222208';
+import { BulletParent, CollideBullet } from '../bullets.js?v=20261030222208';
+import { heartRef, move_towards_point, view_y, lt } from '../common.js?v=20261030222208';
 
 export class DBulletMaker extends BulletParent {
   constructor() {

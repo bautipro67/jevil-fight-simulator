@@ -1,8 +1,8 @@
 // Jevil popping up around the board (jattack 0, 12; the Final Chaos cameo is type 66):
 // obj_joker_teleport. type 0 throws one diamond, type 1 a fan of five spades.
-import { defineObject, instance_create, instance_destroy, snd_play, snd_stop } from '../rt.js';
-import { BulletParent, scr_bullet_inherit } from '../bullets.js';
-import { heartRef, move_towards_point, view_x, VIEW_W, lt, gt } from '../common.js';
+import { defineObject, instance_create, instance_destroy, snd_play, snd_stop } from '../rt.js?v=20261030222208';
+import { BulletParent, scr_bullet_inherit } from '../bullets.js?v=20261030222208';
+import { heartRef, move_towards_point, view_x, VIEW_W, lt, gt } from '../common.js?v=20261030222208';
 
 export class JokerTeleport extends BulletParent {
   constructor() {

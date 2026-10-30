@@ -1,11 +1,11 @@
-import { loadAssets, loadAudioInBackground } from './runtime/assets.js';
-import { audioInit, audioPreload, audioState } from './runtime/audio.js';
-import * as gm from './runtime/gm.js';
-import { G } from './runtime/gm.js';
-import { setupTouch } from './touch.js';
-import { setupFullscreen } from './fullscreen.js';
-import { loadSettings, applyVolume } from './settings.js';
-import './screens/controls.js';
+import { loadAssets, loadAudioInBackground } from './runtime/assets.js?v=20261030222208';
+import { audioInit, audioPreload, audioState } from './runtime/audio.js?v=20261030222208';
+import * as gm from './runtime/gm.js?v=20261030222208';
+import { G } from './runtime/gm.js?v=20261030222208';
+import { setupTouch } from './touch.js?v=20261030222208';
+import { setupFullscreen } from './fullscreen.js?v=20261030222208';
+import { loadSettings, applyVolume } from './settings.js?v=20261030222208';
+import './screens/controls.js?v=20261030222208';
 
 loadSettings();
 
@@ -83,13 +83,13 @@ function debugKeys() {
 
 async function start() {
   // Registers every ported object and script.
-  await Promise.all([import('./battle/index.js'), import('./jevil/index.js')]);
+  await Promise.all([import('./battle/index.js?v=20261030222208'), import('./jevil/index.js?v=20261030222208')]);
   const mode = params.has('sandbox') ? 'sandbox' : 'battle';
   if (mode === 'sandbox') {
-    const sb = await import('./debug/sandbox.js');
+    const sb = await import('./debug/sandbox.js?v=20261030222208');
     sb.startSandbox(params);
   } else {
-    const title = await import('./screens/title.js');
+    const title = await import('./screens/title.js?v=20261030222208');
     title.startTitle();
   }
 }

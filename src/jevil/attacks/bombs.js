@@ -2,9 +2,9 @@
 import {
   defineObject, instance_create, instance_destroy, instancesOf, choose, random, point_direction,
   lengthdir_x, lengthdir_y, draw_self, draw_set_color, draw_set_alpha, draw_circle,
-} from '../rt.js';
-import { BulletParent, scr_bullet_inherit } from '../bullets.js';
-import { heartRef, move_towards_point } from '../common.js';
+} from '../rt.js?v=20261030222208';
+import { BulletParent, scr_bullet_inherit } from '../bullets.js?v=20261030222208';
+import { heartRef, move_towards_point } from '../common.js?v=20261030222208';
 
 export class SuitBomb extends BulletParent {
   constructor() {

@@ -1,5 +1,5 @@
 // Small helpers shared by the battle modules.
-import { G, Instance, instance_exists } from '../runtime/gm.js';
+import { G, Instance, instance_exists } from '../runtime/gm.js?v=20261030222208';
 
 export const arr = (n, v = 0) => new Array(n).fill(v);
 export const arr2 = (n, m, v = 0) => Array.from({ length: n }, () => new Array(m).fill(v));
