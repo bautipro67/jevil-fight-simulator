@@ -3,6 +3,7 @@ import { audioInit, audioPreload } from './runtime/audio.js';
 import * as gm from './runtime/gm.js';
 import { G } from './runtime/gm.js';
 import { setupTouch } from './touch.js';
+import { setupFullscreen } from './fullscreen.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -15,6 +16,7 @@ const params = new URLSearchParams(location.search);
 G.debug.enabled = params.has('debug') || params.has('sandbox');
 
 if (setupTouch(params.has('touch'))) document.body.classList.add('touch');
+setupFullscreen();
 
 function fit() {
   // On portrait touch screens the on-screen controls sit below the game.

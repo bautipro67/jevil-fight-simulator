@@ -39,7 +39,20 @@
 <style>
   html, body { margin: 0; background: #000; color: #ddd; overflow-x: hidden; }
   body { font: 15px/1.6 system-ui, sans-serif; }
-  #stage { height: 100vh; height: 100dvh; display: flex; align-items: center; justify-content: center; }
+  #stage { position: relative; height: 100vh; height: 100dvh; display: flex; align-items: center; justify-content: center; background: #000; }
+  #stage:fullscreen { width: 100vw; height: 100vh; }
+  #stage:fullscreen .hint { display: none; }
+  #fullscreen { position: absolute; top: max(10px, env(safe-area-inset-top)); right: 10px; display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; background: rgba(0,0,0,.6); color: #fff; border: 2px solid rgba(255,255,255,.5); border-radius: 0;
+    font: bold 12px monospace; letter-spacing: 1px; cursor: pointer; opacity: .75; z-index: 2; }
+  #fullscreen[hidden] { display: none; }
+  #fullscreen:hover, #fullscreen:focus-visible { opacity: 1; border-color: #ffff40; color: #ffff40; }
+  #fullscreen svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+  #fullscreen .exit, #fullscreen.on .enter { display: none; }
+  #fullscreen.on .exit { display: block; }
+  #fullscreen.on span { display: none; }
+  #fullscreen.on { opacity: .35; }
+  body.touch #fullscreen span { display: none; }
   body.touch #stage { align-items: flex-start; padding-top: max(8px, env(safe-area-inset-top)); box-sizing: border-box; }
   @media (orientation: landscape) { body.touch #stage { align-items: center; padding-top: 0; } }
   canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; touch-action: none; }
@@ -75,13 +88,17 @@
 <main id="stage">
   <canvas id="game" width="640" height="480" aria-label="Jevil Fight Simulator game"></canvas>
   <div class="hint">Scroll down for controls and info</div>
+  <button id="fullscreen" type="button" title="Fullscreen (F)" aria-label="Fullscreen (F)" hidden>
+    <svg class="enter" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 6V1h5M10 1h5v5M15 10v5h-5M6 15H1v-5"/></svg>
+    <svg class="exit" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1v5H1M15 6h-5V1M10 15v-5h5M1 10h5v5"/></svg>
+    <span>FULLSCREEN</span>
+  </button>
+  <div id="touch" hidden>
+    <div class="dpad" aria-label="Move"><span data-dir="38"></span><span data-dir="40"></span><span data-dir="37"></span><span data-dir="39"></span></div>
+    <div class="btn z" data-key="90">Z<small>OK</small></div>
+    <div class="btn x" data-key="88">X<small>BACK</small></div>
+  </div>
 </main>
-
-<div id="touch" hidden>
-  <div class="dpad" aria-label="Move"><span data-dir="38"></span><span data-dir="40"></span><span data-dir="37"></span><span data-dir="39"></span></div>
-  <div class="btn z" data-key="90">Z<small>OK</small></div>
-  <div class="btn x" data-key="88">X<small>BACK</small></div>
-</div>
 
 <section id="about">
   <h1>Jevil Fight Simulator</h1>
