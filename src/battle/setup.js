@@ -3,9 +3,9 @@
 import {
   global, G, Instance, defineObject, defineScript, S, instance_create, room_reset, objectExists,
   font_add_sprite_ext, L,
-} from '../runtime/gm.js?v=20261030222208';
-import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261030222208';
-import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261030222208';
+} from '../runtime/gm.js?v=20261030223631';
+import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261030223631';
+import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261030223631';
 
 // Card Castle equipment: weapon in slot 0, armors in slots 1 and 2 (at, df, mag).
 const WEAPONS = { 1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0], 5: [2, 0, 0], 6: [2, 0, 0], 7: [5, 0, 4], 8: [4, 0, 0], 9: [2, 0, 0], 10: [0, 0, 2] };

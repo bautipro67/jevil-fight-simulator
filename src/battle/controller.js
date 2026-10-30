@@ -6,9 +6,9 @@ import {
   left_p, right_p, up_p, down_p, button1_p, button2_p, string_width, string_hash_to_newline,
   draw_set_color, draw_set_alpha, draw_set_font, draw_set_halign, draw_rectangle, draw_sprite,
   draw_sprite_ext, draw_text, draw_text_colour, draw_line_width, L, sprite_get_number,
-} from '../runtime/gm.js?v=20261030222208';
-import { snd_play, snd_volume, mus_loop_ext } from '../runtime/audio.js?v=20261030222208';
-import { arr, arr2, view_x, view_y, withInst, exists, gmlString, subst } from './common.js?v=20261030222208';
+} from '../runtime/gm.js?v=20261030223631';
+import { snd_play, snd_volume, mus_loop_ext } from '../runtime/audio.js?v=20261030223631';
+import { arr, arr2, view_x, view_y, withInst, exists, gmlString, subst } from './common.js?v=20261030223631';
 
 const sin = Math.sin, cos = Math.cos;
 const g = global;

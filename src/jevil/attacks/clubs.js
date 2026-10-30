@@ -1,8 +1,8 @@
 // Three-club attack (jattack 10): obj_clubsbullet_dark flies in fast, stops, and fires three
 // 3-way club bursts aimed at the SOUL.
-import { defineObject, instance_create, instance_destroy } from '../rt.js?v=20261030222208';
-import { BulletParent, scr_bullet_inherit } from '../bullets.js?v=20261030222208';
-import { heartRef, move_towards_point } from '../common.js?v=20261030222208';
+import { defineObject, instance_create, instance_destroy } from '../rt.js?v=20261030223631';
+import { BulletParent, scr_bullet_inherit } from '../bullets.js?v=20261030223631';
+import { heartRef, move_towards_point } from '../common.js?v=20261030223631';
 
 export class ClubsBulletDark extends BulletParent {
   constructor() {

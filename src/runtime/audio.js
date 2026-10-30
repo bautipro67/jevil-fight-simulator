@@ -1,12 +1,24 @@
 // WebAudio playback with the Deltarune snd_* / mus_* wrapper semantics.
-import { assets, audioReady } from './assets.js?v=20261030222208';
+import { assets, audioReady } from './assets.js?v=20261030223631';
 
 let ctx = null;
 let master = null;
 const buffers = {};
 const playing = new Map(); // sound name -> Set of voices
 
+// While the game is paused the audio stays suspended, even if a key press would unlock it.
+let held = false;
+export function audioSuspend() {
+  held = true;
+  if (ctx) ctx.suspend();
+}
+export function audioResume() {
+  held = false;
+  if (ctx) ctx.resume();
+}
+
 export function audioInit() {
+  if (held) return Promise.resolve();
   if (ctx) return ctx.resume();
   ctx = new (window.AudioContext || window.webkitAudioContext)();
   master = ctx.createGain();

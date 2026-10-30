@@ -3,12 +3,12 @@ import {
   Instance, defineObject, instance_create, instance_destroy, controls, setControls, captureNextInput, cancelCapture,
   up_p, down_p, button1_p, button2_p, draw_set_font, draw_set_color, draw_set_alpha, draw_set_halign, draw_text,
   draw_sprite_ext, fa_left, fa_center,
-} from '../runtime/gm.js?v=20261030222208';
-import { snd_play } from '../runtime/audio.js?v=20261030222208';
-import { saveControls } from '../settings.js?v=20261030222208';
+} from '../runtime/gm.js?v=20261030223631';
+import { snd_play } from '../runtime/audio.js?v=20261030223631';
+import { saveControls } from '../settings.js?v=20261030223631';
 
 const KEY_NAMES = {
-  8: 'BACKSPACE', 9: 'TAB', 13: 'ENTER', 16: 'SHIFT', 17: 'CTRL', 18: 'ALT', 32: 'SPACE',
+  8: 'BACKSPACE', 9: 'TAB', 13: 'ENTER', 16: 'SHIFT', 17: 'CTRL', 18: 'ALT', 27: 'ESC', 32: 'SPACE',
   37: 'LEFT', 38: 'UP', 39: 'RIGHT', 40: 'DOWN', 186: ';', 187: '=', 188: ',', 189: '-', 190: '.',
   191: '/', 192: '`', 219: '[', 220: '\\', 221: ']', 222: "'",
 };
@@ -27,7 +27,7 @@ export const padName = b => (b == null ? '-' : PAD_NAMES[b] ?? 'BTN' + b);
 
 const ACTIONS = [
   ['confirm', 'CONFIRM'], ['cancel', 'CANCEL'], ['menu', 'MENU'],
-  ['up', 'UP'], ['down', 'DOWN'], ['left', 'LEFT'], ['right', 'RIGHT'],
+  ['up', 'UP'], ['down', 'DOWN'], ['left', 'LEFT'], ['right', 'RIGHT'], ['pause', 'PAUSE'],
 ];
 
 // The new input becomes the action's main binding; an action that used it gets the old one.
@@ -97,7 +97,7 @@ class ControlsMenu extends Instance {
     if (this.onClose) this.onClose();
   }
   draw() {
-    const top = 110, gap = 32;
+    const top = 92, gap = 30;
     draw_set_halign(fa_left);
     draw_set_font('fnt_main');
     draw_set_color(0x808080);
@@ -130,7 +130,7 @@ class ControlsMenu extends Instance {
     draw_set_color(this.waiting ? 0xffff00 : 0x808080);
     const help = this.waiting ? 'PRESS A KEY OR A GAMEPAD BUTTON   (ESC: CANCEL)'
       : this.msg || 'CONFIRM: CHANGE    CANCEL: BACK    THE LEFT STICK ALWAYS MOVES';
-    draw_text(320, 410, help);
+    draw_text(320, 420, help);
     draw_set_halign(fa_left);
   }
 }

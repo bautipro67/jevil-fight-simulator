@@ -9,7 +9,7 @@
 // - Colours are 0xRRGGBB numbers. GML literals are BGR: wrap them in bgr(0x...).
 // - Angles are degrees, counter-clockwise; y points down (same as GameMaker).
 // - `global` holds GML globals: global.tension, global.hp[...] etc.
-import { assets, spriteMask } from './assets.js?v=20261030222208';
+import { assets, spriteMask } from './assets.js?v=20261030223631';
 
 export const global = {};
 export const ROOM_W = 640;
@@ -455,13 +455,14 @@ function keyVk(e) {
 // Remappable controls. Each action has keyboard key codes and gamepad buttons (standard
 // mapping: 0 A, 1 B, 2 X, 3 Y, 4 LB, 5 RB, 6 LT, 7 RT, 8 Select, 9 Start, 12-15 D-pad).
 export const DEFAULT_CONTROLS = {
-  confirm: { keys: [90, 13], pad: [0, 9] },
+  confirm: { keys: [90, 13], pad: [0] },
   cancel: { keys: [88, 16], pad: [1] },
   menu: { keys: [67, 17], pad: [3] },
   up: { keys: [38], pad: [12] },
   down: { keys: [40], pad: [13] },
   left: { keys: [37], pad: [14] },
   right: { keys: [39], pad: [15] },
+  pause: { keys: [27, 80], pad: [9] },
 };
 const cloneControls = c => Object.fromEntries(Object.entries(c).map(([a, v]) => [a, { keys: [...v.keys], pad: [...v.pad] }]));
 export const controls = cloneControls(DEFAULT_CONTROLS);
@@ -471,13 +472,15 @@ export function setControls(c) {
     const v = c?.[a];
     controls[a] = v && Array.isArray(v.keys) && Array.isArray(v.pad) ? { keys: [...v.keys], pad: [...v.pad] } : d[a];
   }
+  // Bindings saved before PAUSE existed had Start on confirm; Start now pauses.
+  if (c && !c.pause) controls.confirm.pad = controls.confirm.pad.filter(b => b !== 9);
 }
 
 // Gamepad buttons and the left stick show up in the key state as pseudo key codes.
 const PAD = 1000, STICK = 1100; // PAD + button index; STICK + 0..3 = up, down, left, right
 const STICK_DIRS = ['up', 'down', 'left', 'right'];
 // On-screen controls press actions directly, so they keep working after any rebinding.
-const ACTION_CODE = { confirm: 1200, cancel: 1201, menu: 1202, up: 1203, down: 1204, left: 1205, right: 1206 };
+const ACTION_CODE = { confirm: 1200, cancel: 1201, menu: 1202, up: 1203, down: 1204, left: 1205, right: 1206, pause: 1207 };
 export const virtualAction = (a, isDown) => virtualKey(ACTION_CODE[a], isDown);
 const codesOf = a => {
   const c = controls[a];
@@ -590,6 +593,7 @@ export const left_h = () => any(held, 'left');
 export const right_h = () => any(held, 'right');
 export const up_h = () => any(held, 'up');
 export const down_h = () => any(held, 'down');
+export const pause_p = () => any(pressed, 'pause');
 
 // ---------------------------------------------------------------- drawing
 

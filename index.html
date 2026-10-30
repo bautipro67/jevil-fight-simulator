@@ -45,8 +45,14 @@
   #fullscreen { position: absolute; top: max(10px, env(safe-area-inset-top)); right: 10px; display: flex; align-items: center; gap: 6px;
     padding: 6px 10px; background: rgba(0,0,0,.6); color: #fff; border: 2px solid rgba(255,255,255,.5); border-radius: 0;
     font: bold 12px monospace; letter-spacing: 1px; cursor: pointer; opacity: .75; z-index: 2; }
-  #fullscreen[hidden], #soundhint[hidden] { display: none; }
-  #soundhint { position: absolute; top: max(10px, env(safe-area-inset-top)); left: 10px; padding: 6px 10px; background: rgba(0,0,0,.6);
+  #fullscreen[hidden], #soundhint[hidden], #pausebtn[hidden] { display: none; }
+  #pausebtn { position: absolute; top: max(10px, env(safe-area-inset-top)); left: 10px; display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; background: rgba(0,0,0,.6); color: #fff; border: 2px solid rgba(255,255,255,.5);
+    font: bold 12px monospace; letter-spacing: 1px; cursor: pointer; opacity: .75; z-index: 2; }
+  #pausebtn:hover, #pausebtn:focus-visible { opacity: 1; border-color: #ffff40; color: #ffff40; }
+  #pausebtn svg { width: 14px; height: 14px; fill: currentColor; }
+  body.touch #pausebtn span { display: none; }
+  #soundhint { position: absolute; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); padding: 6px 10px; background: rgba(0,0,0,.6);
     color: #fff; border: 2px solid rgba(255,255,255,.5); font: bold 12px monospace; z-index: 2; pointer-events: none; }
   #fullscreen:hover, #fullscreen:focus-visible { opacity: 1; border-color: #ffff40; color: #ffff40; }
   #fullscreen svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
@@ -90,6 +96,10 @@
 <main id="stage">
   <canvas id="game" width="640" height="480" aria-label="Jevil Fight Simulator game"></canvas>
   <div class="hint">Scroll down for controls and info</div>
+  <button id="pausebtn" type="button" title="Pause (Esc / P)" aria-label="Pause" hidden>
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h3v12H4zM9 2h3v12H9z"/></svg>
+    <span>PAUSE</span>
+  </button>
   <div id="soundhint" hidden>🔇 Click or press any key to turn on sound</div>
   <button id="fullscreen" type="button" title="Fullscreen (F)" aria-label="Fullscreen (F)" hidden>
     <svg class="enter" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 6V1h5M10 1h5v5M15 10v5h-5M6 15H1v-5"/></svg>
@@ -109,8 +119,8 @@
   <p>The battle logic is ported from the original game, so the attacks, damage, TP and ACTs work like the real fight. Turn on <strong>Easy Mode</strong> on the title screen to take half damage while you practice.</p>
 
   <h2>Controls</h2>
-  <p><kbd>Z</kbd> or <kbd>Enter</kbd>: confirm &nbsp; <kbd>X</kbd> or <kbd>Shift</kbd>: cancel &nbsp; <kbd>Arrow keys</kbd>: move. On phones, use the on-screen pad and buttons.</p>
-  <p><strong>Gamepad:</strong> plug in an Xbox, PlayStation or Switch controller and press a button. <kbd>A</kbd>/<kbd>Cross</kbd>: confirm &nbsp; <kbd>B</kbd>/<kbd>Circle</kbd>: cancel &nbsp; D-pad or left stick: move &nbsp; <kbd>Start</kbd>: confirm. Click the page or press a key once to turn on the sound (browsers require it).</p>
+  <p><kbd>Z</kbd> or <kbd>Enter</kbd>: confirm &nbsp; <kbd>X</kbd> or <kbd>Shift</kbd>: cancel &nbsp; <kbd>Arrow keys</kbd>: move &nbsp; <kbd>Esc</kbd> or <kbd>P</kbd>: pause. On phones, use the on-screen pad and buttons, and the PAUSE button at the top.</p>
+  <p><strong>Gamepad:</strong> plug in an Xbox, PlayStation or Switch controller and press a button. <kbd>A</kbd>/<kbd>Cross</kbd>: confirm &nbsp; <kbd>B</kbd>/<kbd>Circle</kbd>: cancel &nbsp; D-pad or left stick: move &nbsp; <kbd>Start</kbd>: pause. Click the page or press a key once to turn on the sound (browsers require it).</p>
   <p><strong>Remap the buttons</strong> in OPTIONS &rarr; CONTROLS (keyboard and gamepad). OPTIONS also has the volume and <strong>hats for your SOUL</strong>.</p>
 
   <h2>Practice mode</h2>
@@ -122,7 +132,7 @@
 </section>
 
 <script>
-  window.APP_VERSION = '20261030222208';
+  window.APP_VERSION = '20261030223631';
   // A browser may keep an old copy of this page for a few minutes after a deploy:
   // if a newer version is out, load it (at most once per version and visit).
   (() => {
@@ -144,6 +154,6 @@
     }).catch(() => {});
   })();
 </script>
-<script type="module" src="src/main.js?v=20261030222208"></script>
+<script type="module" src="src/main.js?v=20261030223631"></script>
 </body>
 </html>

@@ -3,10 +3,10 @@
 import {
   G, global, Instance, defineObject, defineScript, S, instance_create, instance_exists, draw_sprite_ext,
   draw_set_color, draw_set_font, draw_set_alpha, draw_rectangle, L,
-} from '../runtime/gm.js?v=20261030222208';
-import { snd_play } from '../runtime/audio.js?v=20261030222208';
-import { startBattle } from '../battle/setup.js?v=20261030222208';
-import { gotoRoom, scr_darkbox, fadeOut, centerText } from './common.js?v=20261030222208';
+} from '../runtime/gm.js?v=20261030223631';
+import { snd_play } from '../runtime/audio.js?v=20261030223631';
+import { startBattle } from '../battle/setup.js?v=20261030223631';
+import { gotoRoom, scr_darkbox, fadeOut, centerText } from './common.js?v=20261030223631';
 
 const E = n => L('obj_jokerbattleevent_slash_Step_0_gml_' + n + '_0');
 const LINES = {

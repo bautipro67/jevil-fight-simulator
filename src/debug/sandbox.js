@@ -8,13 +8,13 @@ import {
   instancesOf, event_user, choose, keyboard_check, keyboard_check_pressed, random_set_seed, round, S,
   draw_set_font, draw_set_halign, draw_set_color, draw_set_alpha, draw_rectangle, draw_text, draw_sprite_ext,
   fa_left, fa_center, merge_color, button1_p, vk, draw_self,
-} from '../runtime/gm.js?v=20261030222208';
-import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js?v=20261030222208';
-import { gotoRoom } from '../screens/common.js?v=20261030222208';
-import { getBest, saveBest } from '../settings.js?v=20261030222208';
-import { drawSoulHat } from '../hats.js?v=20261030222208';
-import { tagParent } from '../jevil/common.js?v=20261030222208';
-import { scr_moveheart } from '../jevil/soul.js?v=20261030222208';
+} from '../runtime/gm.js?v=20261030223631';
+import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js?v=20261030223631';
+import { gotoRoom } from '../screens/common.js?v=20261030223631';
+import { getBest, saveBest } from '../settings.js?v=20261030223631';
+import { drawSoulHat } from '../hats.js?v=20261030223631';
+import { tagParent } from '../jevil/common.js?v=20261030223631';
+import { scr_moveheart } from '../jevil/soul.js?v=20261030223631';
 
 export const ATTACKS = [
   [0, 70, 'Five-spade teleports'], [1, 65, 'Spade spirals'], [2, 49, 'Heart bombs'], [3, 75, 'Spinning scythes'],
@@ -427,7 +427,6 @@ class PracticeController extends SandboxController {
     super.begin();
   }
   step() {
-    if (keyboard_check_pressed(vk.escape)) return this.quit();
     if (this.finished) {
       if (button1_p()) this.quit();
       return;
@@ -531,7 +530,7 @@ class PracticeController extends SandboxController {
     draw_text(x + 440, y + 400, `SCORE ${live}`);
     draw_set_font('fnt_main');
     draw_set_color(0x808080);
-    draw_text(x + 40, y + 446, 'ESC: QUIT TO TITLE');
+    draw_text(x + 40, y + 446, 'ESC / P: PAUSE');
     draw_text(x + 300, y + 446, `RETRIES ${this.retries}` + (this.fullRun ? `     BEST ${this.best}` : '     PARTIAL RUN (NO BEST)'));
     draw_set_alpha(1);
     // The SOUL always stays on top of the HUD.
@@ -566,6 +565,7 @@ class PracticeController extends SandboxController {
 defineObject('obj_practicecontroller', PracticeController);
 
 export function startPractice({ start = 0, hp = 90 } = {}) {
+  G.lastPractice = { start, hp };
   gotoRoom();
   const first = Math.max(0, Math.min(PRACTICE_COUNT - 1, start));
   const ctl = setupArena('obj_practicecontroller', first);
