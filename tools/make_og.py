@@ -11,11 +11,16 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPR = json.load(open(os.path.join(ROOT, "assets", "sprites.json")))
 
 
+PAGES = {}
+
+
 def frame(name, i=0):
     s = SPR[name]
-    with open(os.path.join(ROOT, "assets", "sprites", name + ".png"), "rb") as f:
-        w, h, px = read_png(f.read())
-    return s["w"], s["h"], crop(px, w, i * s["w"], 0, s["w"], s["h"])
+    if s["p"] not in PAGES:
+        with open(os.path.join(ROOT, "assets", "atlas%d.png" % s["p"]), "rb") as f:
+            PAGES[s["p"]] = read_png(f.read())
+    w, h, px = PAGES[s["p"]]
+    return s["w"], s["h"], crop(px, w, s["x"] + i * s["w"], s["y"], s["w"], s["h"])
 
 
 def paste(dst, dw, dh, src, sw, sh, x, y):

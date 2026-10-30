@@ -59,10 +59,8 @@ class GameoverInit extends Instance {
       }
       if (global.tempflag[3] >= 1) this.timer += 15;
     }
-    if (this.timer >= 80 && this.timer < 150) {
-      if (button1_p()) this.Z_COUNT += 1;
-      if (this.Z_COUNT >= 4) this.timer = 150;
-    }
+    // Quick retry: one press skips the rest of the heart break (the game needs four).
+    if (this.timer >= 50 && this.timer < 150 && button1_p()) this.timer = 150;
     if (this.timer >= 150) S.startFailure();
   }
   draw() { draw_self(this); }
@@ -82,7 +80,7 @@ class DeviceChoice extends Instance {
     this.NAME = [L('DEVICE_CHOICE_slash_Create_0_gml_22_0'), L('DEVICE_CHOICE_slash_Create_0_gml_23_0')];
     this.NAMEX = [110, 190];
     this.NAMEY = [180, 180];
-    this.CURX = -1;
+    this.CURX = 0; // YES preselected so one press retries (the game starts with neither)
     this.IDEALX = 150;
     this.IDEALY = 180;
     this.HEARTX = 150;
@@ -161,7 +159,8 @@ class DeviceFailure extends Instance {
     return instance_create(x, y, 'obj_writer');
   }
   step() {
-    const quick = global.tempflag[3] >= 1;
+    // Always the game's shorter repeat-death sequence: straight to "WILL YOU TRY AGAIN?".
+    const quick = true;
     if (this.EVENT == 1) {
       snd_free_all();
       this.music = snd_init('AUDIO_DEFEAT.ogg');

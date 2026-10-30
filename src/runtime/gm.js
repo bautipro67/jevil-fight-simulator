@@ -551,11 +551,19 @@ export const draw_set_valign = a => { draw.valign = a; };
 export const draw_set_blend_mode = m => { draw.blend = m; };
 export const gpu_set_blendmode = draw_set_blend_mode;
 
-const tintCache = new Map();
+// Per-image caches (sprite strips are canvases, so they are keyed by object, not URL).
+function cacheGet(cache, img, color) {
+  return cache.get(img)?.get(color);
+}
+function cacheSet(cache, img, color, c) {
+  if (!cache.has(img)) cache.set(img, new Map());
+  cache.get(img).set(color, c);
+}
+
+const tintCache = new WeakMap();
 function tinted(img, color) {
   if ((color & 0xffffff) === 0xffffff) return img;
-  const keyName = img.src + '|' + color;
-  let c = tintCache.get(keyName);
+  let c = cacheGet(tintCache, img, color);
   if (!c) {
     c = document.createElement('canvas');
     c.width = img.width; c.height = img.height;
@@ -566,20 +574,19 @@ function tinted(img, color) {
     x.fillRect(0, 0, c.width, c.height);
     x.globalCompositeOperation = 'destination-in';
     x.drawImage(img, 0, 0);
-    tintCache.set(keyName, c);
+    cacheSet(tintCache, img, color, c);
   }
   return c;
 }
 
 // d3d_set_fog(true, colour, 0, 1): sprites are drawn as solid silhouettes in that colour.
 let fogColor = null;
-const fogCache = new Map();
+const fogCache = new WeakMap();
 export function d3d_set_fog(enable, color = 0xffffff) {
   fogColor = enable ? (color & 0xffffff) : null;
 }
 function fogged(img, color) {
-  const keyName = img.src + '|fog|' + color;
-  let c = fogCache.get(keyName);
+  let c = cacheGet(fogCache, img, color);
   if (!c) {
     c = document.createElement('canvas');
     c.width = img.width; c.height = img.height;
@@ -588,7 +595,7 @@ function fogged(img, color) {
     x.globalCompositeOperation = 'source-in';
     x.fillStyle = css(color);
     x.fillRect(0, 0, c.width, c.height);
-    fogCache.set(keyName, c);
+    cacheSet(fogCache, img, color, c);
   }
   return c;
 }

@@ -1,4 +1,4 @@
-import { loadAssets } from './runtime/assets.js';
+import { loadAssets, loadAudioInBackground } from './runtime/assets.js';
 import { audioInit, audioPreload } from './runtime/audio.js';
 import * as gm from './runtime/gm.js';
 import { G } from './runtime/gm.js';
@@ -102,7 +102,8 @@ async function boot() {
   audioInit();
   addEventListener('keydown', audioInit, { once: true });
   addEventListener('pointerdown', audioInit, { once: true });
-  audioPreload();
+  loadAudioInBackground();
+  audioPreload().catch(e => console.warn(e));
   await start();
   loop();
 }

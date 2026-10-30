@@ -25,42 +25,50 @@ async function bytes(path) {
   return r.arrayBuffer();
 }
 
-export const MUSIC_FILES = ['joker.ogg', 'AUDIO_DEFEAT.ogg', 'prejoker.ogg'];
+export const MUSIC_FILES = ['prejoker.ogg', 'joker.ogg', 'AUDIO_DEFEAT.ogg'];
 
+// Graphics and text block startup; audio (see loadAudioInBackground) does not.
 export async function loadAssets(onProgress = () => {}) {
   const [sprites, fonts, sounds, text] = await Promise.all([
     json('sprites.json'), json('fonts.json'), json('sounds.json'), json('text/en.json'),
   ]);
   assets.text = text;
-  const jobs = [];
+  assets.sounds = sounds;
+  const pageIds = [...new Set(Object.values(sprites).map(s => s.p))];
+  const jobs = [
+    ...pageIds.map(p => loadImage(BASE + 'atlas' + p + '.png').then(img => [p, img])),
+    ...Object.entries(fonts).map(([name, f]) => loadImage(BASE + 'fonts/' + name + '.png').then(img => {
+      f.name = name;
+      f.type = 'atlas';
+      f.img = img;
+      assets.fonts[name] = f;
+    })),
+  ];
+  let done = 0;
+  jobs.forEach(j => j.then(() => onProgress(++done / jobs.length)));
+  const pages = Object.fromEntries((await Promise.all(jobs)).filter(Array.isArray));
+  // Each sprite gets its own frame strip so drawing and tinting work per sprite.
   for (const [name, s] of Object.entries(sprites)) {
     s.name = name;
+    const c = document.createElement('canvas');
+    c.width = s.w * Math.max(1, s.n);
+    c.height = s.h;
+    c.getContext('2d').drawImage(pages[s.p], s.x, s.y, c.width, c.height, 0, 0, c.width, c.height);
+    s.img = c;
     assets.sprites[name] = s;
-    jobs.push(() => loadImage(BASE + 'sprites/' + name + '.png').then(img => { s.img = img; }));
   }
-  for (const [name, f] of Object.entries(fonts)) {
-    f.name = name;
-    f.type = 'atlas';
-    assets.fonts[name] = f;
-    jobs.push(() => loadImage(BASE + 'fonts/' + name + '.png').then(img => { f.img = img; }));
-  }
-  for (const [name, s] of Object.entries(sounds)) {
-    assets.sounds[name] = s;
-    jobs.push(() => bytes('sounds/' + s.file).then(b => { assets.soundData[name] = b; }));
-  }
+}
+
+// Sound effects (one bundle) and music files, fetched after the game has started.
+export const audioReady = { sounds: Promise.resolve(), music: {} };
+export function loadAudioInBackground() {
+  audioReady.sounds = bytes('sounds.bin').then(buf => {
+    for (const [name, s] of Object.entries(assets.sounds)) assets.soundData[name] = buf.slice(s.o, s.o + s.l);
+  });
   for (const m of MUSIC_FILES) {
-    jobs.push(() => bytes('music/' + m).then(b => { assets.music[m] = b; }));
+    audioReady.music[m] = bytes('music/' + m).then(b => { assets.music[m] = b; return b; });
   }
-  let done = 0;
-  const total = jobs.length;
-  const queue = jobs.slice();
-  async function worker() {
-    while (queue.length) {
-      await queue.shift()();
-      onProgress(++done / total);
-    }
-  }
-  await Promise.all(Array.from({ length: 8 }, worker));
+  audioReady.sounds.catch(e => console.warn(e));
 }
 
 // Collision mask (alpha > 0) for one frame of a sprite, computed on first use.

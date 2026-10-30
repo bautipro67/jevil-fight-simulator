@@ -65,6 +65,32 @@ def strip_png(dw, s):
     return w * n, h, out
 
 
+def pack_atlas(strips, width=2048, max_height=2048, pad=1):
+    """Shelf-packs (name, w, h, rgba) strips into pages: [(w, h, rgba, [(name, x, y)])]."""
+    order = sorted(strips, key=lambda s: (-s[2], -s[1]))
+    pages, cur = [], None
+    for name, w, h, px in order:
+        if w > width:
+            raise ValueError("sprite strip wider than the atlas: %s (%d px)" % (name, w))
+        if cur is None or (cur["x"] + w > width and cur["shelf_y"] + cur["shelf_h"] + pad + h > max_height):
+            cur = {"x": 0, "shelf_y": 0, "shelf_h": 0, "items": []}
+            pages.append(cur)
+        if cur["x"] + w > width:
+            cur["shelf_y"] += cur["shelf_h"] + pad
+            cur["x"], cur["shelf_h"] = 0, 0
+        cur["items"].append((name, cur["x"], cur["shelf_y"], w, h, px))
+        cur["x"] += w + pad
+        cur["shelf_h"] = max(cur["shelf_h"], h)
+    out = []
+    for p in pages:
+        ph = p["shelf_y"] + p["shelf_h"]
+        rgba = bytearray(width * ph * 4)
+        for name, x, y, w, h, px in p["items"]:
+            blit(rgba, width, ph, px, w, h, x, y)
+        out.append((width, ph, rgba, [(n, x, y) for n, x, y, *_ in p["items"]]))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--game", required=True)
@@ -73,20 +99,26 @@ def main():
     load_extra_lists()
     ch1 = os.path.join(a.game, "chapter1_windows")
     dw = DataWin(os.path.join(ch1, "data.win"))
-    for sub in ("sprites", "fonts", "sounds", "music", "text"):
+    for sub in ("fonts", "music", "text"):
         os.makedirs(os.path.join(a.out, sub), exist_ok=True)
 
-    sprites = {}
+    # All sprites go into a few atlas pages (one download instead of one per sprite).
+    sprites, strips = {}, []
     for s in dw.sprites:
         if not any(re.search(p, s["name"]) for p in SPRITE_PATTERNS):
             continue
         w, h, px = strip_png(dw, s)
-        write_png(os.path.join(a.out, "sprites", s["name"] + ".png"), w, h, px)
+        strips.append((s["name"], w, h, px))
         sprites[s["name"]] = {
             "w": s["width"], "h": s["height"], "ox": s["origin_x"], "oy": s["origin_y"], "n": s["frames"],
             "bbox": [s["margin_left"], s["margin_top"], s["margin_right"], s["margin_bottom"]],
             "bboxMode": s["bbox_mode"], "sepMasks": s["sep_masks"],
         }
+    pages = pack_atlas(strips)
+    for i, (pw, ph, px, placed) in enumerate(pages):
+        write_png(os.path.join(a.out, "atlas%d.png" % i), pw, ph, px)
+        for name, x, y in placed:
+            sprites[name].update({"p": i, "x": x, "y": y})
     with open(os.path.join(a.out, "sprites.json"), "w") as f:
         json.dump(sprites, f, separators=(",", ":"), sort_keys=True)
 
@@ -101,15 +133,16 @@ def main():
     with open(os.path.join(a.out, "fonts.json"), "w") as f:
         json.dump(fonts, f, separators=(",", ":"))
 
-    sounds = {}
+    # Sound effects are concatenated into one bundle; sounds.json holds each one's offset and length.
+    sounds, bundle = {}, bytearray()
     for s in dw.sounds:
         if not any(re.search(p, s["name"]) for p in SOUND_PATTERNS):
             continue
         data, ext = dw.sound_bytes(s)
-        fn = s["name"] + ext
-        with open(os.path.join(a.out, "sounds", fn), "wb") as f:
-            f.write(data)
-        sounds[s["name"]] = {"file": fn, "volume": s["volume"]}
+        sounds[s["name"]] = {"o": len(bundle), "l": len(data), "type": ext[1:], "volume": s["volume"]}
+        bundle += data
+    with open(os.path.join(a.out, "sounds.bin"), "wb") as f:
+        f.write(bundle)
     with open(os.path.join(a.out, "sounds.json"), "w") as f:
         json.dump(sounds, f, separators=(",", ":"), sort_keys=True)
 

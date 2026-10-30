@@ -1,5 +1,5 @@
 // WebAudio playback with the Deltarune snd_* / mus_* wrapper semantics.
-import { assets } from './assets.js';
+import { assets, audioReady } from './assets.js';
 
 let ctx = null;
 let master = null;
@@ -18,16 +18,23 @@ export function setMasterVolume(v) {
   if (master) master.gain.value = v;
 }
 
-async function decode(key, data) {
-  if (!buffers[key]) buffers[key] = ctx.decodeAudioData(data.slice(0));
+// Music keys ('mus:<file>') wait for their download; sound effects are only played once loaded.
+function dataFor(key) {
+  if (key.startsWith('mus:')) return audioReady.music[key.slice(4)] ?? Promise.reject(new Error('unknown music ' + key));
+  return Promise.resolve(assets.soundData[key]);
+}
+
+function decode(key) {
+  if (!buffers[key]) buffers[key] = dataFor(key).then(d => ctx.decodeAudioData(d.slice(0)));
   return buffers[key];
 }
 
-// Decode everything up front so the first play of each sound is not late.
+// Decodes everything as it arrives so the first play of each sound is not late.
 export async function audioPreload() {
+  await audioReady.sounds;
   await Promise.all([
-    ...Object.entries(assets.soundData).map(([k, d]) => decode(k, d)),
-    ...Object.entries(assets.music).map(([k, d]) => decode('mus:' + k, d)),
+    ...Object.keys(assets.soundData).map(k => decode(k)),
+    ...Object.keys(audioReady.music).map(m => decode('mus:' + m)),
   ]);
 }
 
@@ -40,7 +47,7 @@ class Voice {
     this.src = null;
     this.stopped = false;
     this.pitch = pitch;
-    decode(key, key.startsWith('mus:') ? assets.music[key.slice(4)] : assets.soundData[key]).then(buf => {
+    decode(key).then(buf => {
       if (this.stopped) return;
       this.src = ctx.createBufferSource();
       this.src.buffer = buf;
@@ -49,7 +56,7 @@ class Voice {
       this.src.connect(this.gain);
       this.src.onended = () => this.cleanup();
       this.src.start();
-    });
+    }).catch(e => console.warn(e));
     if (!playing.has(key)) playing.set(key, new Set());
     playing.get(key).add(this);
   }
@@ -81,9 +88,10 @@ function soundVolume(name) {
 
 // snd_play(sound): fire-and-forget sound effect; returns a voice handle.
 export function snd_play(name) {
-  if (!ctx || !name || !assets.soundData[name]) {
-    if (name && !assets.soundData[name]) console.warn('missing sound', name);
-    return null;
+  if (!ctx || !name) return null;
+  if (!assets.soundData[name]) {
+    if (!assets.sounds[name]) console.warn('missing sound', name);
+    return null; // not downloaded yet
   }
   return new Voice(name, false, soundVolume(name), 1);
 }
