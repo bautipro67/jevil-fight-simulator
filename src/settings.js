@@ -13,7 +13,7 @@ function write(key, value) {
 }
 
 export function loadSettings() {
-  const defaults = { simplify: false, intro: true, easy: false, volume: 1, hat: 'NONE' };
+  const defaults = { simplify: false, intro: true, easy: false, volume: 1, hat: 'NONE', skin: 'DEFAULT' };
   G.settings = { ...defaults, ...(read(SETTINGS_KEY) || {}) };
   setControls(read(CONTROLS_KEY));
 }

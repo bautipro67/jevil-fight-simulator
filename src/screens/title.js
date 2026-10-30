@@ -12,6 +12,7 @@ import { startPractice, PRACTICE_HP } from '../debug/sandbox.js';
 import { gotoRoom, fadeOut, centerText } from './common.js';
 import { saveSettings, applyVolume, getBest } from '../settings.js';
 import { HATS, currentHat, drawHat } from '../hats.js';
+import { chooseSkinImage, hasSkinImage, setSkinEnabled, skinOn } from '../skin.js';
 import { openControls, keyName } from './controls.js';
 import './gameover.js';
 import './ending.js';
@@ -32,10 +33,14 @@ class Panel extends Instance {
     draw_set_font('fnt_mainbig');
     draw_set_color(0xffffff);
     centerText(320, 34, this.title);
-    // The SOUL wearing the chosen hat, next to the SOUL HAT option.
+    // The SOUL wearing the chosen hat and Jevil with the chosen skin, next to their options.
     if (this.hatPreview) {
-      draw_sprite_ext('spr_heart', 0, 520, 160, 3, 3, 0, 0xffffff, this.alpha / 0.9);
-      drawHat(544, 160, 3);
+      draw_sprite_ext('spr_heart', 0, 520, 140, 3, 3, 0, 0xffffff, this.alpha / 0.9);
+      drawHat(544, 140, 3);
+      draw_sprite_ext('spr_joker_main', 0, 562, 252, 2, 2, 0, 0xffffff, this.alpha / 0.9);
+      draw_set_font('fnt_main');
+      draw_set_color(0x808080);
+      centerText(320, 426, 'SKIN IMAGES STAY ON THIS DEVICE. THEY ARE NEVER UPLOADED.');
     }
   }
 }
@@ -174,40 +179,56 @@ function optionsMenu(music, cur = 0, panel = null) {
     mainMenu(music, 2);
   };
   panel.hatPreview = true;
+  // Picking an image happens outside the game loop; the menu waits for it.
+  const pickImage = m => {
+    m.done = true;
+    chooseSkinImage(() => { m.done = false; m.buffer = 1; });
+    setTimeout(() => { m.done = false; m.buffer = 1; }, 500);
+  };
+  const toggleSkin = m => {
+    if (G.settings.skin === 'CUSTOM') return setSkinEnabled(false);
+    if (hasSkinImage()) return setSkinEnabled(true);
+    pickImage(m);
+  };
   menu.setup([
     () => 'VOLUME: < ' + Math.round(G.settings.volume * 100) + '% >',
     () => 'SOUL HAT: < ' + currentHat().name + ' >',
+    () => 'JEVIL SKIN: < ' + (skinOn() ? 'CUSTOM' : 'DEFAULT') + ' >',
+    'LOAD SKIN IMAGE',
     () => 'EASY MODE: ' + (G.settings.easy ? 'ON' : 'OFF'),
     () => 'INTRO: ' + (G.settings.intro ? 'ON' : 'OFF'),
     () => 'SIMPLIFY VFX: ' + (G.settings.simplify ? 'ON' : 'OFF'),
     'CONTROLS',
     'BACK',
   ], (i, m) => {
-    if (i == 6) return back(m);
-    if (i == 5) {
+    if (i == 8) return back(m);
+    if (i == 7) {
       instance_destroy(m);
       panel.title = 'CONTROLS';
       panel.hatPreview = false;
-      openControls(() => optionsMenu(music, 5, panel));
+      openControls(() => optionsMenu(music, 7, panel));
       return;
     }
+    m.done = false;
+    m.buffer = 1;
     if (i == 0) setVolume(G.settings.volume >= 1 ? 0 : G.settings.volume + 0.1);
     if (i == 1) setHat(1);
-    if (i == 2) G.settings.easy = !G.settings.easy;
-    if (i == 3) G.settings.intro = !G.settings.intro;
-    if (i == 4) {
+    if (i == 2) toggleSkin(m);
+    if (i == 3) pickImage(m);
+    if (i == 4) G.settings.easy = !G.settings.easy;
+    if (i == 5) G.settings.intro = !G.settings.intro;
+    if (i == 6) {
       G.settings.simplify = !G.settings.simplify;
       global.flag[8] = G.settings.simplify ? 1 : 0;
     }
     saveSettings();
-    m.done = false;
-    m.buffer = 1;
-  }, 'fnt_mainbig', 36);
+  }, 'fnt_mainbig', 34);
   menu.cur = cur;
   menu.onBack = back;
   menu.onAdjust = (i, dir) => {
     if (i == 0) setVolume(G.settings.volume + dir * 0.1);
     if (i == 1) setHat(dir);
+    if (i == 2) toggleSkin(menu);
   };
 }
 defineScript('startTitle', startTitle);

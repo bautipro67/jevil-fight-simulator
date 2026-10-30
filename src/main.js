@@ -5,6 +5,7 @@ import { G } from './runtime/gm.js';
 import { setupTouch } from './touch.js';
 import { setupFullscreen } from './fullscreen.js';
 import { loadSettings, applyVolume } from './settings.js';
+import { loadSkin } from './skin.js';
 import './screens/controls.js';
 
 loadSettings();
@@ -99,6 +100,7 @@ async function boot() {
   debugKeys();
   drawLoading(0);
   await loadAssets(drawLoading);
+  await loadSkin();
   // Audio stays suspended until the first key press or tap (browser autoplay rules);
   // sounds started before that begin playing once it resumes.
   audioInit();

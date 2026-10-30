@@ -3,7 +3,7 @@
 // registered here only if the battle modules did not register them first.
 import {
   G, global, Instance, defineObject, objectExists, instancesOf, instance_find, instance_create,
-  instance_destroy, point_direction, getSprite, draw_self, draw_set_alpha, draw_set_color,
+  instance_destroy, point_direction, getSprite, drawSpriteOf, draw_self, draw_set_alpha, draw_set_color,
   draw_rectangle,
 } from '../runtime/gm.js';
 
@@ -86,9 +86,9 @@ export function scr_dark_marker(x, y, spr) {
 // d3d_set_fog(true, colour, ...) + draw_sprite_ext: the sprite as a solid-colour silhouette.
 const fogCache = new Map();
 export function draw_sprite_fog(name, sub, x, y, xs, ys, rot, color, alpha) {
-  const spr = getSprite(name);
+  const spr = drawSpriteOf(name);
   if (!spr || !spr.img || alpha <= 0) return;
-  const key = name + '|' + color;
+  const key = (spr.skinId ? 'skin' + spr.skinId + '|' : '') + name + '|' + color;
   let c = fogCache.get(key);
   if (!c) {
     c = document.createElement('canvas');
@@ -110,7 +110,8 @@ export function draw_sprite_fog(name, sub, x, y, xs, ys, rot, color, alpha) {
   ctx.translate(x, y);
   if (rot) ctx.rotate(-rot * Math.PI / 180);
   ctx.scale(xs, ys);
-  ctx.drawImage(c, f * spr.w, 0, spr.w, spr.h, -spr.ox, -spr.oy, spr.w, spr.h);
+  const sw = spr.sw ?? spr.w, sh = spr.sh ?? spr.h;
+  ctx.drawImage(c, f * sw, 0, sw, sh, -spr.ox, -spr.oy, spr.w, spr.h);
   ctx.restore();
 }
 
