@@ -691,21 +691,15 @@ function begin(alpha) {
   return ctx;
 }
 
-// Skins replace how a sprite looks (every frame) without touching its collision mask:
-// name -> { img, w, h, ox, oy, n: 1, sw, sh } where sw x sh is the image's own size.
-export const spriteSkins = new Map();
-export const drawSpriteOf = name => spriteSkins.get(name) || getSprite(name);
-
 export function draw_sprite_ext(name, sub, x, y, xs = 1, ys = 1, rot = 0, col = 0xffffff, alpha = 1) {
-  const spr = drawSpriteOf(name);
+  const spr = getSprite(name);
   if (!spr || !spr.img || alpha <= 0) return;
   const f = frameOf(spr, sub);
-  const sw = spr.sw ?? spr.w, sh = spr.sh ?? spr.h;
   const ctx = begin(alpha);
   ctx.translate(x, y);
   if (rot) ctx.rotate(-rot * Math.PI / 180);
   if (xs !== 1 || ys !== 1) ctx.scale(xs, ys);
-  ctx.drawImage(sprSource(spr.img, col), f * sw, 0, sw, sh, -spr.ox, -spr.oy, spr.w, spr.h);
+  ctx.drawImage(sprSource(spr.img, col), f * spr.w, 0, spr.w, spr.h, -spr.ox, -spr.oy, spr.w, spr.h);
   ctx.restore();
 }
 

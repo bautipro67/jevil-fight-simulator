@@ -13,8 +13,11 @@ function write(key, value) {
 }
 
 export function loadSettings() {
-  const defaults = { simplify: false, intro: true, easy: false, volume: 1, hat: 'NONE', skin: 'DEFAULT' };
+  const defaults = { simplify: false, intro: true, easy: false, volume: 1, hat: 'NONE' };
   G.settings = { ...defaults, ...(read(SETTINGS_KEY) || {}) };
+  delete G.settings.skin;
+  // The custom Jevil skin was removed: forget any image saved by it.
+  try { localStorage.removeItem('jevil-sim-skin'); } catch (e) { /* storage unavailable */ }
   setControls(read(CONTROLS_KEY));
 }
 
