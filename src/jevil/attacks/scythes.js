@@ -4,9 +4,9 @@ import {
   global, defineObject, instance_create, instance_destroy, instance_number, instancesOf, random, choose,
   lengthdir_x, lengthdir_y, bgr, draw_sprite_ext, draw_self, draw_set_color, draw_rectangle,
   snd_play, snd_stop, S,
-} from '../rt.js?v=20261030223631';
-import { RegularBulletPermanent, scr_bullet_inherit } from '../bullets.js?v=20261030223631';
-import { first, setAll, boardRef, room_height, ge, gt, lt, le } from '../common.js?v=20261030223631';
+} from '../rt.js?v=20261031024711';
+import { RegularBulletPermanent, scr_bullet_inherit } from '../bullets.js?v=20261031024711';
+import { first, setAll, boardRef, room_height, ge, gt, lt, le } from '../common.js?v=20261031024711';
 
 export class BigScythe extends RegularBulletPermanent {
   constructor() {

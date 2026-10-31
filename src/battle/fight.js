@@ -4,8 +4,8 @@ import {
   withObj, event_user, choose, random, round, merge_color, button1_p, button2_p, button3_p,
   draw_set_color, draw_set_alpha, draw_set_font, draw_set_halign, draw_get_color, draw_rectangle,
   draw_sprite, draw_sprite_ext, draw_text_transformed,
-} from '../runtime/gm.js?v=20261030223631';
-import { withInst, gmlString } from './common.js?v=20261030223631';
+} from '../runtime/gm.js?v=20261031024711';
+import { withInst, gmlString } from './common.js?v=20261031024711';
 
 const g = global;
 

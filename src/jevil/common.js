@@ -5,7 +5,7 @@ import {
   G, global, Instance, defineObject, objectExists, instancesOf, instance_find, instance_create,
   instance_destroy, point_direction, getSprite, draw_self, draw_set_alpha, draw_set_color,
   draw_rectangle,
-} from '../runtime/gm.js?v=20261030223631';
+} from '../runtime/gm.js?v=20261031024711';
 
 export const VIEW_W = 640;
 export const VIEW_H = 480;

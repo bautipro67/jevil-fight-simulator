@@ -1,6 +1,6 @@
 // On-screen controls for phones and tablets: an 8-way pad plus confirm (Z) and cancel (X).
 // They press actions, not keys, so they keep working after the controls are rebound.
-import { virtualAction } from './runtime/gm.js?v=20261030223631';
+import { virtualAction } from './runtime/gm.js?v=20261031024711';
 
 const diff = (a, b) => ((((a - b) % 360) + 540) % 360) - 180;
 

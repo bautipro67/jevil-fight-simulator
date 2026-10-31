@@ -5,16 +5,17 @@ import {
   G, global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, objectExists,
   draw_sprite_ext, draw_set_color, draw_set_font, draw_set_alpha, draw_rectangle, draw_text, controls,
   draw_set_halign, draw_text_transformed, fa_center, fa_left,
-} from '../runtime/gm.js?v=20261030223631';
-import { snd_init, snd_play, mus_loop_ext, mus_volume, mus_stop } from '../runtime/audio.js?v=20261030223631';
-import { startBattle } from '../battle/setup.js?v=20261030223631';
-import { startPractice, PRACTICE_HP } from '../debug/sandbox.js?v=20261030223631';
-import { gotoRoom, fadeOut, centerText } from './common.js?v=20261030223631';
-import { saveSettings, applyVolume, getBest } from '../settings.js?v=20261030223631';
-import { HATS, currentHat, drawHat } from '../hats.js?v=20261030223631';
-import { openControls, keyName } from './controls.js?v=20261030223631';
-import './gameover.js?v=20261030223631';
-import './ending.js?v=20261030223631';
+} from '../runtime/gm.js?v=20261031024711';
+import { snd_init, snd_play, mus_loop_ext, mus_volume, mus_stop } from '../runtime/audio.js?v=20261031024711';
+import { startBattle } from '../battle/setup.js?v=20261031024711';
+import { startPractice, PRACTICE_HP } from '../debug/sandbox.js?v=20261031024711';
+import { gotoRoom, fadeOut, centerText } from './common.js?v=20261031024711';
+import { saveSettings, applyVolume, getBest } from '../settings.js?v=20261031024711';
+import { HATS, currentHat, drawHat } from '../hats.js?v=20261031024711';
+import { openEquipment } from './equipment.js?v=20261031024711';
+import { openControls, keyName } from './controls.js?v=20261031024711';
+import './gameover.js?v=20261031024711';
+import './ending.js?v=20261031024711';
 
 // Dark panel over the title art, behind the OPTIONS and CONTROLS lists.
 class Panel extends Instance {
@@ -115,11 +116,12 @@ function leave(music, then) {
 
 function mainMenu(music, cur = 0) {
   const menu = instance_create(MENU_X, MENU_Y, 'obj_sim_heartmenu');
-  menu.setup(['BEGIN', 'PRACTICE', 'OPTIONS'], (i, m) => {
+  menu.setup(['BEGIN', 'PRACTICE', 'EQUIPMENT', 'OPTIONS'], (i, m) => {
     if (i == 0) return leave(music, () => startBattle({ intro: G.settings.intro }));
     instance_destroy(m);
     if (i == 1) practiceMenu(music);
-    if (i == 2) optionsMenu(music);
+    if (i == 2) equipmentMenu(music);
+    if (i == 3) optionsMenu(music);
   }, 'fnt_mainbig', 28);
   menu.cur = cur;
 }
@@ -164,6 +166,16 @@ function setHat(dir) {
   snd_play('snd_select');
 }
 
+// EQUIPMENT: weapons, armors and items for the fight (src/screens/equipment.js).
+function equipmentMenu(music) {
+  const panel = instance_create(0, 0, 'obj_sim_panel');
+  panel.title = 'EQUIPMENT';
+  openEquipment(() => {
+    instance_destroy(panel);
+    mainMenu(music, 2);
+  });
+}
+
 function optionsMenu(music, cur = 0, panel = null) {
   panel = panel || instance_create(0, 0, 'obj_sim_panel');
   panel.title = 'OPTIONS';
@@ -173,7 +185,7 @@ function optionsMenu(music, cur = 0, panel = null) {
     saveSettings();
     instance_destroy(m);
     instance_destroy(panel);
-    mainMenu(music, 2);
+    mainMenu(music, 3);
   };
   panel.hatPreview = true;
   menu.setup([

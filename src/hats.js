@@ -1,7 +1,7 @@
 // Cosmetic hats for the SOUL, chosen in OPTIONS. Each hat is a small pixel map drawn in the
 // game's style (dark outline, a highlight and a shadow tone); '.' is clear. The SOUL is 20 px
 // wide, so hats are 14 to 22 px. `lift` raises a hat above the SOUL (for the halo).
-import { G } from './runtime/gm.js?v=20261030223631';
+import { G } from './runtime/gm.js?v=20261031024711';
 
 const PALETTE = {
   K: '#000000', W: '#ffffff', w: '#b8b8b8',

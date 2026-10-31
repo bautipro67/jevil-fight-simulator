@@ -3,19 +3,11 @@
 import {
   global, G, Instance, defineObject, defineScript, S, instance_create, room_reset, objectExists,
   font_add_sprite_ext, L,
-} from '../runtime/gm.js?v=20261030223631';
-import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261030223631';
-import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261030223631';
+} from '../runtime/gm.js?v=20261031024711';
+import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261031024711';
+import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261031024711';
+import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261031024711';
 
-// Card Castle equipment: weapon in slot 0, armors in slots 1 and 2 (at, df, mag).
-const WEAPONS = { 1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0], 5: [2, 0, 0], 6: [2, 0, 0], 7: [5, 0, 4], 8: [4, 0, 0], 9: [2, 0, 0], 10: [0, 0, 2] };
-const ARMORS = { 0: [0, 0, 0], 1: [0, 1, 0], 2: [0, 2, 0], 4: [0, 2, 0], 5: [1, 2, 0], 6: [0, 0, 2], 7: [2, 2, 2] };
-// char id -> [weapon, armor1, armor2]: Spookysword / Brave Ax / Ragger, Amber Card, Dice Brace,
-// IronShackle, White Ribbon.
-const LOADOUT = { 1: [5, 5, 1], 2: [6, 1, 2], 3: [9, 4, 1] };
-// Chapter 1 consumables: Top Cake, ReviveMint x2, ClubsSandwich, HeartsDonut, ChocDiamond,
-// Darkburger, Dark Candy.
-const INVENTORY = [6, 2, 2, 11, 12, 13, 8, 1];
 
 function scr_gamestart() {
   global.chapter = 1;
@@ -118,18 +110,20 @@ defineScript('init_battle_globals', () => {
   global.charauto = arr(4); // obj_prisonevent clears auto-Susie before this fight
   global.darkzone = 1;
   global.plot = 165;
+  // The equipment and items chosen on the EQUIPMENT screen (src/battle/equipment.js).
+  const loadout = getLoadout();
   for (const c of [1, 2, 3]) {
-    const [w, a1, a2] = LOADOUT[c];
+    const [w, a1, a2] = loadout.gear[c];
     global.charweapon[c] = w;
     global.chararmor1[c] = a1;
     global.chararmor2[c] = a2;
     [WEAPONS[w], ARMORS[a1], ARMORS[a2]].forEach((s, slot) => {
-      global.itemat[c][slot] = s[0];
-      global.itemdf[c][slot] = s[1];
-      global.itemmag[c][slot] = s[2];
+      global.itemat[c][slot] = s[1];
+      global.itemdf[c][slot] = s[2];
+      global.itemmag[c][slot] = s[3];
     });
   }
-  INVENTORY.forEach((it, i) => { global.item[i] = it; });
+  loadout.items.filter(id => id).forEach((it, i) => { global.item[i] = it; });
   S.scr_spellinfo_all();
   global.hpfont = font_add_sprite_ext('spr_numbersfontsmall', '0123456789-+', false, 2);
   global.damagefont = font_add_sprite_ext('spr_numbersfontbig', '0123456789', true, 0);
