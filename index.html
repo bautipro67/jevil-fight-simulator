@@ -72,6 +72,10 @@
   #about a { color: #ffff40; }
   #about kbd { background: #222; border: 1px solid #444; border-radius: 4px; padding: 1px 6px; font-size: 13px; }
   #about .small { color: #888; font-size: 13px; }
+  #codeform { display: flex; gap: 8px; flex-wrap: wrap; }
+  #codeform input { flex: 1 1 200px; background: #111; color: #fff; border: 1px solid #555; border-radius: 4px; padding: 8px 10px; font: inherit; text-transform: uppercase; }
+  #codeform button { background: #ffff40; color: #000; border: 0; border-radius: 4px; padding: 8px 16px; font: inherit; font-weight: bold; cursor: pointer; }
+  #codemsg.ok { color: #7f7; } #codemsg.bad { color: #f88; }
 
   #touch { position: fixed; inset: 0; pointer-events: none; user-select: none; -webkit-user-select: none; }
   #touch[hidden] { display: none; }
@@ -128,12 +132,20 @@
   <p>Choose <strong>PRACTICE</strong> on the title screen (or open <a href="?practice">practice mode</a> directly) to dodge Jevil's 16 attacks in order, Bad Time Simulator style. Lose your whole HP bar and the attack restarts; survive it and you move on to the next one, all the way to the Final Chaos. You can start from any attack and pick 90 HP, 45 HP or 1 HP (no hit). Every cleared attack scores points (more without getting hit, more for grazing, more on harder HP), retries cost points, and your best full run is saved.</p>
   <p>For free practice, <a href="?sandbox&amp;attack=0">sandbox mode</a> repeats any attack forever: press <kbd>[</kbd> and <kbd>]</kbd> to switch attacks and <kbd>I</kbd> for invincibility.</p>
 
+  <h2>Codes</h2>
+  <p>Got a code? Type it here to unlock extras.</p>
+  <form id="codeform" autocomplete="off">
+    <input type="text" maxlength="32" placeholder="Enter a code" aria-label="Code" spellcheck="false">
+    <button type="submit">Redeem</button>
+  </form>
+  <p id="codemsg" role="status"></p>
+
   <h2>Credits</h2>
   <p class="small">DELTARUNE and all its characters, graphics, music and sounds are © Toby Fox. This is a free, non-commercial fan project, not affiliated with Toby Fox or 8-4. If you enjoy it, <a href="https://deltarune.com">get the real game</a>. Source code: <a href="https://github.com/bautipro67/jevil-fight-simulator">GitHub</a>.</p>
 </section>
 
 <script>
-  window.APP_VERSION = '20261031024711';
+  window.APP_VERSION = '20261101031117';
   // A browser may keep an old copy of this page for a few minutes after a deploy:
   // if a newer version is out, load it (at most once per version and visit).
   (() => {
@@ -155,6 +167,6 @@
     }).catch(() => {});
   })();
 </script>
-<script type="module" src="src/main.js?v=20261031024711"></script>
+<script type="module" src="src/main.js?v=20261101031117"></script>
 </body>
 </html>

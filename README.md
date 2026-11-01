@@ -12,6 +12,7 @@ Play the Jevil boss fight from **DELTARUNE Chapter 1** for free in your browser,
 - **Practice mode** (Bad Time Simulator style): dodge the 16 attacks in order; lose your HP bar and the attack restarts, survive it and you move on. Pick the starting attack and 90 / 45 / 1 HP. Scores with ranks and a saved best for full runs. Direct link: [`?practice`](https://bautipro67.github.io/jevil-fight-simulator/?practice).
 - **EQUIPMENT**: pick each character's weapon and two armors (any Chapter 1 gear they can use) and the items for the fight. Saved in the browser.
 - **Easy Mode** (title screen → OPTIONS) halves the damage you take.
+- **Codes**: type a secret code in the Codes box under the game to unlock extras.
 - **OPTIONS**: volume, **SOUL hats** and **CONTROLS** to remap every button on keyboard and gamepad. Options are remembered in the browser.
 - **Sandbox mode** to repeat any attack freely: [`?sandbox&attack=0`](https://bautipro67.github.io/jevil-fight-simulator/?sandbox&attack=0) (`[` / `]` switch attacks, `I` invincibility).
 - Touch controls on phones and tablets.

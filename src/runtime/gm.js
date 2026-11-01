@@ -9,7 +9,7 @@
 // - Colours are 0xRRGGBB numbers. GML literals are BGR: wrap them in bgr(0x...).
 // - Angles are degrees, counter-clockwise; y points down (same as GameMaker).
 // - `global` holds GML globals: global.tension, global.hp[...] etc.
-import { assets, spriteMask } from './assets.js?v=20261031024711';
+import { assets, spriteMask } from './assets.js?v=20261101031117';
 
 export const global = {};
 export const ROOM_W = 640;
@@ -496,8 +496,12 @@ const swallowed = new Set();
 export function captureNextInput(cb) { capture = cb; }
 export function cancelCapture() { capture = null; }
 
+// Typing in a text box on the page (the Codes box) does not reach the game.
+const typing = e => e.target instanceof Element && !!e.target.closest('input, textarea, select');
+
 export function inputAttach(target = window) {
   target.addEventListener('keydown', e => {
+    if (typing(e)) return;
     const k = keyVk(e);
     if (capture) {
       const cb = capture;
@@ -513,6 +517,7 @@ export function inputAttach(target = window) {
     if ([37, 38, 39, 40, 32, 13].includes(k) || (k >= 112 && k <= 115)) e.preventDefault();
   });
   target.addEventListener('keyup', e => {
+    if (typing(e)) return;
     const k = keyVk(e);
     if (swallowed.delete(k)) return;
     down.delete(k);

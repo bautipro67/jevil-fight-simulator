@@ -3,10 +3,10 @@
 import {
   global, G, Instance, defineObject, defineScript, S, instance_create, room_reset, objectExists,
   font_add_sprite_ext, L,
-} from '../runtime/gm.js?v=20261031024711';
-import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261031024711';
-import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261031024711';
-import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261031024711';
+} from '../runtime/gm.js?v=20261101031117';
+import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261101031117';
+import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261101031117';
+import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261101031117';
 
 
 function scr_gamestart() {
