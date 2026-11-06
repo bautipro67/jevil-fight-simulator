@@ -33,6 +33,18 @@ TEXT_KEY_PATTERNS = [r"^obj_joker", r"^obj_battlecontroller", r"^scr_", r"^obj_s
                      r"^obj_gameover", r"^obj_jokerbattleevent"]
 
 
+GAME_SPEED = 30  # DELTARUNE runs at 30 steps a second
+
+
+def frames_per_step(s):
+    """How far image_index moves per step at image_speed 1: the sprite's own playback speed,
+    in frames per game frame (type 1) or frames per second (type 0, over the game speed)."""
+    spd, kind = s.get("playback_speed"), s.get("playback_speed_type")
+    if spd is None:
+        return 1
+    return round(spd if kind == 1 else spd / GAME_SPEED, 6)
+
+
 def load_extra_lists():
     """tools/extra_assets_*.txt: one 'spr:<regex>', 'snd:<regex>', 'font:<name>' or 'text:<regex>' per line."""
     here = os.path.dirname(os.path.abspath(__file__))
@@ -114,6 +126,8 @@ def main():
             "bbox": [s["margin_left"], s["margin_top"], s["margin_right"], s["margin_bottom"]],
             "bboxMode": s["bbox_mode"], "sepMasks": s["sep_masks"],
         }
+        if frames_per_step(s) != 1:
+            sprites[s["name"]]["sp"] = frames_per_step(s)
     pages = pack_atlas(strips)
     for i, (pw, ph, px, placed) in enumerate(pages):
         write_png(os.path.join(a.out, "atlas%d.png" % i), pw, ph, px)

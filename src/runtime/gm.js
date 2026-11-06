@@ -9,7 +9,7 @@
 // - Colours are 0xRRGGBB numbers. GML literals are BGR: wrap them in bgr(0x...).
 // - Angles are degrees, counter-clockwise; y points down (same as GameMaker).
 // - `global` holds GML globals: global.tension, global.hp[...] etc.
-import { assets, spriteMask } from './assets.js?v=20261106200045';
+import { assets, spriteMask } from './assets.js?v=20261106232406';
 
 export const global = {};
 export const ROOM_W = 640;
@@ -1023,7 +1023,8 @@ export function tick() {
     if (!inst.alive || !inst.sprite_index) continue;
     const spr = inst.sprite;
     if (!spr) continue;
-    inst.image_index += inst.image_speed;
+    // image_speed scales the sprite's own playback speed (sprites.json "sp": frames per step).
+    inst.image_index += inst.image_speed * (spr.sp ?? 1);
     const n = Math.max(1, spr.n);
     if (inst.image_index >= n) {
       inst.image_index -= n;
