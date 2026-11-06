@@ -17,6 +17,8 @@ Play the Jevil boss fight from **DELTARUNE Chapter 1** for free in your browser,
 - **Sandbox mode** to repeat any attack freely: [`?sandbox&attack=0`](https://bautipro67.github.io/jevil-fight-simulator/?sandbox&attack=0) (`[` / `]` switch attacks, `I` invincibility).
 - Touch controls on phones and tablets.
 
+Also by the same fan: [Roaring Knight Fight Simulator](https://bautipro67.github.io/roaring-knight-fight-simulator/). See [all the DELTARUNE fight simulators](https://bautipro67.github.io/).
+
 ## Controls
 
 | Key | Action |

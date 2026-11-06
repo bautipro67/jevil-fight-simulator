@@ -3,9 +3,9 @@
 import {
   G, global, Instance, defineObject, defineScript, instance_create, instance_destroy, instancesOf, place_meeting, point_distance, draw_self, draw_sprite_ext, event_user, S, snd_play, snd_stop,
   left_h, right_h, up_h, down_h, button2_h,
-} from './rt.js?v=20261101031117';
-import { first, view_x, view_y, move_towards_point } from './common.js?v=20261101031117';
-import { drawSoulHat } from '../hats.js?v=20261101031117';
+} from './rt.js?v=20261106015146';
+import { first, view_x, view_y, move_towards_point } from './common.js?v=20261106015146';
+import { drawSoulHat } from '../hats.js?v=20261106015146';
 
 const SOLID = 'obj_battlesolid';
 
