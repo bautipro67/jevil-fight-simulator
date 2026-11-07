@@ -1,14 +1,15 @@
 // Shared bits for the non-battle screens: room changes, the dark-world text box, a heart menu.
 import {
-  G, global, Instance, defineObject, room_reset, instance_create, draw_sprite_ext, draw_sprite_stretched_ext,
+  G, global, Instance, defineObject, room_reset, instance_create, instance_destroy, draw_sprite_ext, draw_sprite_stretched_ext,
   draw_set_color, draw_set_font, draw_text, draw_sprite, string_width, up_p, down_p, left_p, right_p, button1_p, button2_p, round,
-} from '../runtime/gm.js?v=20261107142410';
-import { snd_free_all, snd_play } from '../runtime/audio.js?v=20261107142410';
+} from '../runtime/gm.js?v=20261107201439';
+import { audio_stop_all, snd_play } from '../runtime/audio.js?v=20261107201439';
+import { audioStatus } from '../runtime/assets.js?v=20261107201439';
 
 // room_goto: drop every instance and keep only the globals a screen needs.
 export function gotoRoom(keep = {}) {
   const tempflag = global.tempflag;
-  snd_free_all();
+  audio_stop_all();
   room_reset();
   G.viewScale = 1;
   G.camX = G.camY = 0;
@@ -121,3 +122,29 @@ export function centerText(x, y, s) {
 }
 
 void draw_sprite;
+
+// The sound effects come in one bundle after the game has started. A fight started before it has
+// arrived would be silent, so the game waits here (LOADING...) first; a failed download does not
+// block, and neither does a very slow one after a minute.
+class SoundsLoading extends Instance {
+  create() { this.depth = -100000; this.t = 0; this.then = null; }
+  step() {
+    this.t += 1;
+    if (audioStatus.sounds !== 'loading' || this.t > 30 * 60) {
+      const then = this.then;
+      instance_destroy(this);
+      if (then) then();
+    }
+  }
+  draw() {
+    if (this.t < 10) return;
+    draw_set_font('fnt_mainbig');
+    draw_set_color(0xffffff);
+    centerText(G.camX + 320, G.camY + 220, 'LOADING' + '...'.slice(0, 1 + Math.floor(this.t / 15) % 3));
+  }
+}
+defineObject('obj_sim_soundsloading', SoundsLoading);
+export function whenSoundsReady(then) {
+  if (audioStatus.sounds !== 'loading') return then();
+  instance_create(0, 0, 'obj_sim_soundsloading').then = then;
+}

@@ -3,9 +3,9 @@ import {
   global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, instance_exists,
   instance_find, withObj, event_user, random, ceil, merge_color, point_direction, point_distance,
   angle_difference, button1_p, draw_self, draw_sprite_ext, d3d_set_fog, L,
-} from '../runtime/gm.js?v=20261107142410';
-import { snd_play, snd_stop } from '../runtime/audio.js?v=20261107142410';
-import { withInst, subst } from './common.js?v=20261107142410';
+} from '../runtime/gm.js?v=20261107201439';
+import { snd_play, snd_stop } from '../runtime/audio.js?v=20261107201439';
+import { withInst, subst } from './common.js?v=20261107201439';
 
 const g = global;
 const T = n => L('scr_spelltext_slash_scr_spelltext_gml_' + n + '_0');

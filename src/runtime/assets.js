@@ -63,9 +63,15 @@ export async function loadAssets(onProgress = () => {}) {
 
 // Sound effects (one bundle) and music files, fetched after the game has started.
 export const audioReady = { sounds: Promise.resolve(), music: {} };
+// 'loading' until the sound effects bundle is in ('ready') or has failed ('failed').
+export const audioStatus = { sounds: 'loading' };
 export function loadAudioInBackground() {
   audioReady.sounds = bytes('sounds.bin').then(buf => {
     for (const [name, s] of Object.entries(assets.sounds)) assets.soundData[name] = buf.slice(s.o, s.o + s.l);
+    audioStatus.sounds = 'ready';
+  }, e => {
+    audioStatus.sounds = 'failed';
+    throw e;
   });
   for (const m of MUSIC_FILES) {
     audioReady.music[m] = bytes('music/' + m).then(b => { assets.music[m] = b; return b; });

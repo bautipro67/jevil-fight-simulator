@@ -1,6 +1,6 @@
 // Player options and control bindings, remembered in this browser when storage is available.
-import { G, controls, setControls } from './runtime/gm.js?v=20261107142410';
-import { setMasterVolume } from './runtime/audio.js?v=20261107142410';
+import { G, controls, setControls } from './runtime/gm.js?v=20261107201439';
+import { setMasterVolume } from './runtime/audio.js?v=20261107201439';
 
 const SETTINGS_KEY = 'jevil-sim-settings';
 const CONTROLS_KEY = 'jevil-sim-controls';

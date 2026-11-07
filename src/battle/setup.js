@@ -3,10 +3,10 @@
 import {
   global, G, Instance, defineObject, defineScript, S, instance_create, room_reset, objectExists,
   font_add_sprite_ext, L,
-} from '../runtime/gm.js?v=20261107142410';
-import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261107142410';
-import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261107142410';
-import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261107142410';
+} from '../runtime/gm.js?v=20261107201439';
+import { audio_stop_all, snd_init } from '../runtime/audio.js?v=20261107201439';
+import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261107201439';
+import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261107201439';
 
 
 function scr_gamestart() {
@@ -295,7 +295,7 @@ const INTRO_START = [[145, 100], [155, 150], [165, 210]];
 // Starts a fresh Jevil fight: opts.intro = false skips the encounter transition.
 export function startBattle(opts = {}) {
   const tempflag = global.tempflag ? global.tempflag.slice() : null;
-  snd_free_all();
+  audio_stop_all();
   room_reset();
   G.viewScale = 1;
   G.camX = G.camY = 0;

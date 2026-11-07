@@ -1,5 +1,5 @@
 // WebAudio playback with the Deltarune snd_* / mus_* wrapper semantics.
-import { assets, audioReady } from './assets.js?v=20261107142410';
+import { assets, audioReady } from './assets.js?v=20261107201439';
 
 let ctx = null;
 let master = null;
@@ -136,7 +136,13 @@ export function snd_pitch(nameOrVoice, pitch) {
   for (const v of voices) v.setPitch(pitch);
 }
 
+// snd_free_all: as in the game, it ends the music streams (obj_astream); sound effects play on.
 export function snd_free_all() {
+  for (const [key, set] of playing) if (key.startsWith('mus:')) for (const v of [...set]) v.stop();
+}
+
+// audio_stop_all: every sound, music and effects (also the simulator's own screen changes).
+export function audio_stop_all() {
   for (const set of playing.values()) for (const v of [...set]) v.stop();
 }
 
