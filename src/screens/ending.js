@@ -3,10 +3,9 @@
 import {
   G, global, Instance, defineObject, defineScript, S, instance_create, instance_exists, draw_sprite_ext,
   draw_set_color, draw_set_font, draw_set_alpha, draw_rectangle, L,
-} from '../runtime/gm.js?v=20261107001914';
-import { snd_play } from '../runtime/audio.js?v=20261107001914';
-import { startBattle } from '../battle/setup.js?v=20261107001914';
-import { gotoRoom, scr_darkbox, fadeOut, centerText } from './common.js?v=20261107001914';
+} from '../runtime/gm.js?v=20261107142410';
+import { snd_play } from '../runtime/audio.js?v=20261107142410';
+import { gotoRoom, scr_darkbox, fadeOut, centerText } from './common.js?v=20261107142410';
 
 const E = n => L('obj_jokerbattleevent_slash_Step_0_gml_' + n + '_0');
 const LINES = {
@@ -36,6 +35,8 @@ class Ending extends Instance {
   step() {
     const d = LINES[this.kind];
     this.t += 1;
+    // After the scene in the room (src/jevil/scenes.js) only the menu is left.
+    if (this.con == 0 && this.afterScene) this.con = 2;
     if (this.con == 0 && this.t >= 30) {
       this.con = 1;
       this.say(d.jevil.map(E), 35);
@@ -50,7 +51,7 @@ class Ending extends Instance {
       this.t = 0;
       const menu = instance_create(236, 360, 'obj_sim_heartmenu');
       menu.setup(['TRY AGAIN', 'TITLE'], (i) => {
-        fadeOut(20, () => (i == 0 ? startBattle({ intro: G.settings?.intro !== false }) : S.startTitle()));
+        fadeOut(20, () => (i == 0 ? S.startJevilFight() : S.startTitle()));
       }, 'fnt_mainbig', 32);
     }
   }
@@ -58,7 +59,7 @@ class Ending extends Instance {
     const d = LINES[this.kind];
     const jx = 320, jy = 190 + Math.sin(this.t / 15) * 4;
     const a = this.con >= 3 ? 1 : Math.min(1, this.t / 30);
-    draw_sprite_ext(d.sprite, 0, jx, jy, 2, 2, 0, 0xffffff, a);
+    if (!this.afterScene) draw_sprite_ext(d.sprite, 0, jx, jy, 2, 2, 0, 0xffffff, a);
     if (this.con >= 1 && this.con <= 2) {
       this.boxalpha = 1;
       draw_set_color(0);
@@ -77,8 +78,12 @@ class Ending extends Instance {
 }
 defineObject('obj_sim_ending', Ending);
 
-defineScript('startEnding', (kind) => {
+defineScript('startEnding', (kind, opts = {}) => {
+  kind = kind === 'spare' ? 'spare' : 'fight';
+  // With SCENES on, JEVIL's closing scene plays in the room first (src/jevil/scenes.js).
+  if (!opts.afterScene && G.settings?.scenes !== false && 'startJevilAfterScene' in S) return S.startJevilAfterScene(kind);
   gotoRoom();
   const e = instance_create(0, 0, 'obj_sim_ending');
-  e.kind = kind === 'spare' ? 'spare' : 'fight';
+  e.kind = kind;
+  e.afterScene = !!opts.afterScene;
 });

@@ -1,0 +1,8 @@
+# The scenes before and after the fight (obj_jokerbattleevent): the party's overworld poses and the
+# Chapter 1 dialogue faces.
+spr:spr_susie_shock_r
+spr:spr_ralsei_shock_overworld
+spr:spr_susier_dark_unhappy
+spr:spr_face_r_dark
+spr:spr_pixel_white
+spr:^spr_face_s[0-9A-D]$

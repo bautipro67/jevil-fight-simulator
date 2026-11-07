@@ -1,15 +1,15 @@
 // obj_writer (typing engine), scr_texttype, battle text box, enemy speech bubble, obj_darkener,
 // and the obj_face / obj_smallface stubs.
 import {
-  global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, instance_exists,
+  global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, instance_exists, draw_sprite_ext,
   instance_number, withObj, random, button1_p, button2_h, string_length, string_char_at,
   string_insert, string_delete, draw_set_font, draw_set_color, draw_get_color, draw_set_alpha, draw_text,
   draw_text_transformed, draw_text_color, draw_rectangle, L,
-} from '../runtime/gm.js?v=20261107001914';
-import { snd_play } from '../runtime/audio.js?v=20261107001914';
+} from '../runtime/gm.js?v=20261107142410';
+import { snd_play } from '../runtime/audio.js?v=20261107142410';
 
 const sin = Math.sin;
-import { fontName, splitCaller, view_x, view_y } from './common.js?v=20261107001914';
+import { fontName, splitCaller, view_x, view_y } from './common.js?v=20261107142410';
 
 // Text sounds that exist in this build; the others are silent.
 const TEXTSND = {
@@ -476,12 +476,14 @@ export class Writer extends Instance {
 }
 defineObject('obj_writer', Writer);
 
-// obj_face / obj_smallface: fc is always 0 in this fight, so they draw nothing.
+// obj_face: the speaker's face in the text box (Chapter 1: Susie's spr_face_s0-sD by emotion,
+// Ralsei's spr_face_r_dark, with his hat). obj_smallface draws nothing in this fight.
 class FaceParent extends Instance {
   create() { this.depth = 10; this.mouthmove = 0; }
   draw() {}
 }
 defineObject('obj_face_parent', FaceParent);
+const SUSIE_FACES = '0123456789ABCD';
 class Face extends FaceParent {
   create() {
     super.create();
@@ -490,8 +492,34 @@ class Face extends FaceParent {
     this.face_index = 0;
     this.image_speed = 0;
     this.nowface = global.fc;
+    this.facechange = 2;
     this.rate = 1;
     this.buffer = 4;
+    this.f = global.darkzone == 1 ? 2 : 1;
+  }
+  // Step_0: the mouth (frame 1) opens while the writer talks.
+  step() {
+    this.buffer -= 1;
+    if (this.buffer < 0 && this.mouthmove == 1 && this.mouthtimer == 0) this.mouthtimer = 1;
+    if (this.mouthtimer > 0) this.mouthtimer += this.rate;
+    this.face_index = this.mouthtimer >= 1 && this.mouthtimer <= 5 ? 1 : 0;
+    if (this.mouthtimer >= 9) {
+      this.mouthtimer = 0;
+      this.mouthmove = 0;
+    }
+  }
+  draw() {
+    this.facechange -= 1;
+    if (this.nowface != global.fc) this.facechange = 3;
+    if (this.facechange <= 0) {
+      const f = this.f, fe = global.fe ?? 0;
+      if (global.fc == 1) {
+        const spr = fe >= 0 && fe < SUSIE_FACES.length ? 'spr_face_s' + SUSIE_FACES[fe] : 'spr_face_s0';
+        draw_sprite_ext(spr, this.face_index, this.x - 5, this.y, f, f, 0, 0xffffff, 1);
+      }
+      if (global.fc == 2) draw_sprite_ext('spr_face_r_dark', fe, this.x - 15, this.y - 10, f, f, 0, 0xffffff, 1);
+    }
+    this.nowface = global.fc;
   }
 }
 defineObject('obj_face', Face);

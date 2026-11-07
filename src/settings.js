@@ -1,6 +1,6 @@
 // Player options and control bindings, remembered in this browser when storage is available.
-import { G, controls, setControls } from './runtime/gm.js?v=20261107001914';
-import { setMasterVolume } from './runtime/audio.js?v=20261107001914';
+import { G, controls, setControls } from './runtime/gm.js?v=20261107142410';
+import { setMasterVolume } from './runtime/audio.js?v=20261107142410';
 
 const SETTINGS_KEY = 'jevil-sim-settings';
 const CONTROLS_KEY = 'jevil-sim-controls';
@@ -13,7 +13,7 @@ function write(key, value) {
 }
 
 export function loadSettings() {
-  const defaults = { simplify: false, intro: true, easy: false, volume: 1, hat: 'NONE' };
+  const defaults = { simplify: false, intro: true, scenes: true, easy: false, volume: 1, hat: 'NONE' };
   G.settings = { ...defaults, ...(read(SETTINGS_KEY) || {}) };
   delete G.settings.skin;
   // The custom Jevil skin was removed: forget any image saved by it.

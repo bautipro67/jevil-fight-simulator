@@ -3,10 +3,10 @@
 import {
   global, G, Instance, defineObject, defineScript, S, instance_create, room_reset, objectExists,
   font_add_sprite_ext, L,
-} from '../runtime/gm.js?v=20261107001914';
-import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261107001914';
-import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261107001914';
-import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261107001914';
+} from '../runtime/gm.js?v=20261107142410';
+import { snd_free_all, snd_init } from '../runtime/audio.js?v=20261107142410';
+import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261107142410';
+import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261107142410';
 
 
 function scr_gamestart() {
@@ -304,13 +304,19 @@ export function startBattle(opts = {}) {
   instance_create(0, 0, 'obj_time');
   if (G.settings?.simplify) global.flag[8] = 1;
   // The room's background object, switched on as obj_jokerbattleevent does.
-  if ('scr_joker_bg_on' in S) S.scr_joker_bg_on();
-  else if (objectExists('obj_jokerbg_triangle_real')) {
+  // From the scene before the fight (src/jevil/scenes.js) it comes on once the battle exists, and
+  // the JEVIL of the scene flies up out of view.
+  if ('scr_joker_bg_on' in S) {
+    const bg = S.scr_joker_bg_on();
+    if (opts.jevilFly) bg.on = 0;
+  } else if (objectExists('obj_jokerbg_triangle_real')) {
     const bg = instance_create(0, 0, 'obj_jokerbg_triangle_real');
-    bg.on = global.flag[8] == 1 ? 0 : 1;
+    bg.on = global.flag[8] == 1 || opts.jevilFly ? 0 : 1;
   }
-  global.introx = INTRO_START.map(p => p[0]);
-  global.introy = INTRO_START.map(p => p[1]);
+  if (opts.jevilFly) instance_create(opts.jevilFly[0], opts.jevilFly[1], 'obj_sim_jevil_fly');
+  const start = opts.introStart ?? INTRO_START;
+  global.introx = start.map(p => p[0]);
+  global.introy = start.map(p => p[1]);
   if (opts.intro === false) {
     S.scr_encountersetup(global.encounterno);
     instance_create(0, 0, 'obj_battlecontroller');

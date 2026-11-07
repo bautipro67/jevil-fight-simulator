@@ -5,10 +5,9 @@ import {
   G, global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, instance_exists,
   withObj, random, button1_p, left_p, right_p, button2_h, draw_self, draw_sprite_ext, draw_set_color,
   draw_set_alpha, draw_set_font, draw_rectangle, draw_text, string_width, L,
-} from '../runtime/gm.js?v=20261107001914';
-import { snd_play, snd_free_all, snd_init, mus_loop, mus_volume, mus_stop } from '../runtime/audio.js?v=20261107001914';
-import { startBattle } from '../battle/setup.js?v=20261107001914';
-import { gotoRoom } from './common.js?v=20261107001914';
+} from '../runtime/gm.js?v=20261107142410';
+import { snd_play, snd_free_all, snd_init, mus_loop, mus_volume, mus_stop } from '../runtime/audio.js?v=20261107142410';
+import { gotoRoom } from './common.js?v=20261107142410';
 
 // The battle as it looked when the party fell (sprite_create_from_surface).
 class Screenshot extends Instance {
@@ -67,7 +66,7 @@ class GameoverInit extends Instance {
     if (this.timer >= 80 && this.timer < 150) {
       if (button1_p()) this.Z_COUNT += 1;
       if (this.Z_COUNT >= 4) {
-        startBattle({ intro: G.settings?.intro !== false });
+        S.startJevilFight();
         return;
       }
     }
@@ -220,7 +219,7 @@ class DeviceFailure extends Instance {
     if (this.EVENT == 10) {
       this.EVENT = 11;
       mus_stop(this.music);
-      startBattle({ intro: G.settings?.intro !== false });
+      S.startJevilFight();
       return;
     }
     if (this.EVENT == 26) {
