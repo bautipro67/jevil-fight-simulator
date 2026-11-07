@@ -5,11 +5,11 @@ import {
   instance_number, withObj, random, button1_p, button2_h, string_length, string_char_at,
   string_insert, string_delete, draw_set_font, draw_set_color, draw_get_color, draw_set_alpha, draw_text,
   draw_text_transformed, draw_text_color, draw_rectangle, L,
-} from '../runtime/gm.js?v=20261107201439';
-import { snd_play } from '../runtime/audio.js?v=20261107201439';
+} from '../runtime/gm.js?v=20261107203112';
+import { snd_play } from '../runtime/audio.js?v=20261107203112';
 
 const sin = Math.sin;
-import { fontName, splitCaller, view_x, view_y } from './common.js?v=20261107201439';
+import { fontName, splitCaller, view_x, view_y } from './common.js?v=20261107203112';
 
 // Text sounds that exist in this build; the others are silent.
 const TEXTSND = {

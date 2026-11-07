@@ -3,10 +3,10 @@
 import {
   global, G, Instance, defineObject, defineScript, S, instance_create, room_reset, objectExists,
   font_add_sprite_ext, L,
-} from '../runtime/gm.js?v=20261107201439';
-import { audio_stop_all, snd_init } from '../runtime/audio.js?v=20261107201439';
-import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261107201439';
-import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261107201439';
+} from '../runtime/gm.js?v=20261107203112';
+import { audio_stop_all, snd_init } from '../runtime/audio.js?v=20261107203112';
+import { WEAPONS, ARMORS, getLoadout } from './equipment.js?v=20261107203112';
+import { arr, arr2, view_x, view_y, splitCaller } from './common.js?v=20261107203112';
 
 
 function scr_gamestart() {
@@ -290,7 +290,8 @@ class ObjTime extends Instance {
 defineObject('obj_time', ObjTime);
 
 // Overworld spots the party stands on when Jevil starts the fight (end of the intro walk).
-const INTRO_START = [[145, 100], [155, 150], [165, 210]];
+// obj_jokerbattleevent puts the party's markers at heromakex - 100 (where they stand when the battle starts).
+const INTRO_START = [[101, 100], [111, 150], [121, 210]];
 
 // Starts a fresh Jevil fight: opts.intro = false skips the encounter transition.
 export function startBattle(opts = {}) {
