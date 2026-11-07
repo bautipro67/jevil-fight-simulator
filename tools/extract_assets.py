@@ -28,7 +28,7 @@ SOUND_PATTERNS = [
     r"|screenshake|scytheburst|select|spare|spearappear|swing|text|toilet|txtjok|txtral|txtsus|weirdeffect"
     r"|heal_c|spellcast|boost|item|great_shine|cancel|equip|won|levelup|dtrans_lw|wing|noise)$",
 ]
-MUSIC = ["joker.ogg", "AUDIO_DEFEAT.ogg", "prejoker.ogg"]
+MUSIC = ["joker.ogg", "AUDIO_DRONE.ogg", "prejoker.ogg"]
 TEXT_KEY_PATTERNS = [r"^obj_joker", r"^obj_battlecontroller", r"^scr_", r"^obj_spell", r"^obj_heal", r"^obj_pacify",
                      r"^obj_gameover", r"^obj_jokerbattleevent"]
 

@@ -1,5 +1,5 @@
 // WebAudio playback with the Deltarune snd_* / mus_* wrapper semantics.
-import { assets, audioReady } from './assets.js?v=20261106232406';
+import { assets, audioReady } from './assets.js?v=20261107001914';
 
 let ctx = null;
 let master = null;

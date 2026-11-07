@@ -1,13 +1,14 @@
 // Game over: obj_gameover_init (the SOUL breaks over the frozen battle), then the Chapter 1
-// DEVICE_FAILURE screen ("WILL YOU TRY AGAIN?") with AUDIO_DEFEAT playing.
+// DEVICE_FAILURE screen ("IT APPEARS YOU HAVE REACHED... AN END." / "WILL YOU TRY AGAIN?") with
+// AUDIO_DRONE playing; after a retry, the shorter "WILL YOU PERSIST?" version.
 import {
   G, global, Instance, defineObject, defineScript, S, instance_create, instance_destroy, instance_exists,
   withObj, random, button1_p, left_p, right_p, button2_h, draw_self, draw_sprite_ext, draw_set_color,
   draw_set_alpha, draw_set_font, draw_rectangle, draw_text, string_width, L,
-} from '../runtime/gm.js?v=20261106232406';
-import { snd_play, snd_free_all, snd_init, mus_loop, mus_volume, mus_stop } from '../runtime/audio.js?v=20261106232406';
-import { startBattle } from '../battle/setup.js?v=20261106232406';
-import { gotoRoom } from './common.js?v=20261106232406';
+} from '../runtime/gm.js?v=20261107001914';
+import { snd_play, snd_free_all, snd_init, mus_loop, mus_volume, mus_stop } from '../runtime/audio.js?v=20261107001914';
+import { startBattle } from '../battle/setup.js?v=20261107001914';
+import { gotoRoom } from './common.js?v=20261107001914';
 
 // The battle as it looked when the party fell (sprite_create_from_surface).
 class Screenshot extends Instance {
@@ -28,6 +29,7 @@ class GameoverInit extends Instance {
     this.timer = 0;
     this.Z_COUNT = 0;
     this.sh = [];
+    this.fade = 0;
   }
   step() {
     this.timer += 1;
@@ -59,11 +61,27 @@ class GameoverInit extends Instance {
       }
       if (global.tempflag[3] >= 1) this.timer += 15;
     }
-    // Quick retry: one press skips the rest of the heart break (the game needs four).
-    if (this.timer >= 50 && this.timer < 150 && button1_p()) this.timer = 150;
+    // obj_fadeout at 140 (fadespeed 0.08) over the falling shards.
+    if (this.timer >= 140) this.fade = Math.min(1, this.fade + 0.08);
+    // Pressing CONFIRM four times while the SOUL breaks retries at once (scr_tempload), as in the game.
+    if (this.timer >= 80 && this.timer < 150) {
+      if (button1_p()) this.Z_COUNT += 1;
+      if (this.Z_COUNT >= 4) {
+        startBattle({ intro: G.settings?.intro !== false });
+        return;
+      }
+    }
     if (this.timer >= 150) S.startFailure();
   }
-  draw() { draw_self(this); }
+  draw() {
+    draw_self(this);
+    if (this.fade > 0) {
+      draw_set_alpha(this.fade);
+      draw_set_color(0);
+      draw_rectangle(-10, -10, 999, 999, false);
+      draw_set_alpha(1);
+    }
+  }
 }
 defineObject('obj_gameover_init', GameoverInit);
 
@@ -159,11 +177,11 @@ class DeviceFailure extends Instance {
     return instance_create(x, y, 'obj_writer');
   }
   step() {
-    // Always the game's shorter repeat-death sequence: straight to "WILL YOU TRY AGAIN?".
-    const quick = true;
+    // global.tempflag[3]: retries this session; after one, the game skips to "WILL YOU PERSIST?".
+    const quick = global.tempflag[3] >= 1;
     if (this.EVENT == 1) {
       snd_free_all();
-      this.music = snd_init('AUDIO_DEFEAT.ogg');
+      this.music = snd_init('AUDIO_DRONE.ogg');
       mus_loop(this.music);
       this.EVENT = 2;
       this.writer(70, 80, F(10));
@@ -184,7 +202,8 @@ class DeviceFailure extends Instance {
       if (global.choice == 1) { withObj('obj_writer', w => instance_destroy(w)); this.EVENT = 26; }
     }
     if (this.EVENT == 6) {
-      mus_volume(this.music, 0, 30);
+      snd_free_all();
+      mus_stop(this.music);
       global.flag[6] = 1;
       this.writer(50, 80, F(68));
       this.EVENT = 7;

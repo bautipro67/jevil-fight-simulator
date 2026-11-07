@@ -1,13 +1,13 @@
-import { loadAssets, loadAudioInBackground } from './runtime/assets.js?v=20261106232406';
-import { audioInit, audioPreload, audioState } from './runtime/audio.js?v=20261106232406';
-import * as gm from './runtime/gm.js?v=20261106232406';
-import { G } from './runtime/gm.js?v=20261106232406';
-import { setupTouch } from './touch.js?v=20261106232406';
-import { setupFullscreen } from './fullscreen.js?v=20261106232406';
-import { loadSettings, applyVolume } from './settings.js?v=20261106232406';
-import { isPaused, pauseStep, openPause, togglePause, pauseContext } from './pause.js?v=20261106232406';
-import './screens/controls.js?v=20261106232406';
-import './codes.js?v=20261106232406';
+import { loadAssets, loadAudioInBackground } from './runtime/assets.js?v=20261107001914';
+import { audioInit, audioPreload, audioState } from './runtime/audio.js?v=20261107001914';
+import * as gm from './runtime/gm.js?v=20261107001914';
+import { G } from './runtime/gm.js?v=20261107001914';
+import { setupTouch } from './touch.js?v=20261107001914';
+import { setupFullscreen } from './fullscreen.js?v=20261107001914';
+import { loadSettings, applyVolume } from './settings.js?v=20261107001914';
+import { isPaused, pauseStep, openPause, togglePause, pauseContext } from './pause.js?v=20261107001914';
+import './screens/controls.js?v=20261107001914';
+import './codes.js?v=20261107001914';
 
 loadSettings();
 
@@ -27,12 +27,16 @@ setupFullscreen();
 function fit() {
   // On portrait touch screens the on-screen controls sit below the game.
   const reserve = document.body.classList.contains('touch') && innerHeight > innerWidth ? 200 : 0;
-  const w = document.documentElement.clientWidth, h = innerHeight - reserve;
+  // Fullscreen fills the screen keeping 4:3, like the original on PC (GameMaker's "keep aspect
+  // ratio": window_scale = min(width / 640, height / 480), black bars on the sides); the page
+  // itself keeps whole-number scales so every pixel stays the same size.
+  const full = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  const w = full ? innerWidth : document.documentElement.clientWidth, h = innerHeight - reserve;
   const s = Math.max(1, Math.floor(Math.min(w / 640, h / 480)));
   const fs = Math.min(w / 640, h / 480);
-  const scale = fs >= 1 ? s : fs;
-  canvas.style.width = 640 * scale + 'px';
-  canvas.style.height = 480 * scale + 'px';
+  const scale = full || fs < 1 ? fs : s;
+  canvas.style.width = Math.floor(640 * scale) + 'px';
+  canvas.style.height = Math.floor(480 * scale) + 'px';
 }
 addEventListener('resize', fit);
 fit();
@@ -96,13 +100,13 @@ function debugKeys() {
 
 async function start() {
   // Registers every ported object and script.
-  await Promise.all([import('./battle/index.js?v=20261106232406'), import('./jevil/index.js?v=20261106232406')]);
+  await Promise.all([import('./battle/index.js?v=20261107001914'), import('./jevil/index.js?v=20261107001914')]);
   const mode = params.has('sandbox') ? 'sandbox' : 'battle';
   if (mode === 'sandbox') {
-    const sb = await import('./debug/sandbox.js?v=20261106232406');
+    const sb = await import('./debug/sandbox.js?v=20261107001914');
     sb.startSandbox(params);
   } else {
-    const title = await import('./screens/title.js?v=20261106232406');
+    const title = await import('./screens/title.js?v=20261107001914');
     title.startTitle();
   }
 }

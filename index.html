@@ -120,13 +120,15 @@
 <section id="about">
   <h1>Jevil Fight Simulator</h1>
   <p>Play the Jevil boss fight from <strong>DELTARUNE Chapter 1</strong> for free, right in your browser, on PC or mobile. No download needed. Fight with Kris, Susie and Ralsei, dodge all of Jevil's attacks with your SOUL, use Pirouette and Hypnosis to tire him out, and survive the Final Chaos. CHAOS, CHAOS!</p>
-  <p>Choose <strong>EQUIPMENT</strong> on the title screen to pick each character's weapon and armors (any Chapter 1 gear they can use, even the Devilsknife and Jevilstail) and the items you bring into the fight.</p>
-  <p>The battle logic is ported from the original game, so the attacks, damage, TP and ACTs work like the real fight. Turn on <strong>Easy Mode</strong> on the title screen to take half damage while you practice.</p>
+  <p>The battle logic is ported from the original game, so the attacks, damage, TP and ACTs work like the real fight. Turn on <strong>Easy Mode</strong> in OPTIONS to take half damage while you practice.</p>
 
   <h2>Controls</h2>
-  <p><kbd>Z</kbd> or <kbd>Enter</kbd>: confirm &nbsp; <kbd>X</kbd> or <kbd>Shift</kbd>: cancel &nbsp; <kbd>Arrow keys</kbd>: move &nbsp; <kbd>Esc</kbd> or <kbd>P</kbd>: pause. On phones, use the on-screen pad and buttons, and the PAUSE button at the top.</p>
+  <p><kbd>Z</kbd> or <kbd>Enter</kbd>: confirm &nbsp; <kbd>X</kbd> or <kbd>Shift</kbd>: cancel &nbsp; <kbd>Arrow keys</kbd>: move &nbsp; <kbd>Esc</kbd> or <kbd>P</kbd>: pause &nbsp; <kbd>F</kbd>: fullscreen. On phones, use the on-screen pad and buttons, and the PAUSE button at the top.</p>
   <p><strong>Gamepad:</strong> plug in an Xbox, PlayStation or Switch controller and press a button. <kbd>A</kbd>/<kbd>Cross</kbd>: confirm &nbsp; <kbd>B</kbd>/<kbd>Circle</kbd>: cancel &nbsp; D-pad or left stick: move &nbsp; <kbd>Start</kbd>: pause. Click the page or press a key once to turn on the sound (browsers require it).</p>
   <p><strong>Remap the buttons</strong> in OPTIONS &rarr; CONTROLS (keyboard and gamepad). OPTIONS also has the volume and <strong>hats for your SOUL</strong>.</p>
+
+  <h2>Equipment</h2>
+  <p>Choose <strong>EQUIPMENT</strong> on the title screen to pick each character's weapon and armors (any Chapter 1 gear they can use, even the Devilsknife and Jevilstail) and the items you bring into the fight.</p>
 
   <h2>Practice mode</h2>
   <p>Choose <strong>PRACTICE</strong> on the title screen (or open <a href="?practice">practice mode</a> directly) to dodge Jevil's 16 attacks in order, Bad Time Simulator style. Lose your whole HP bar and the attack restarts; survive it and you move on to the next one, all the way to the Final Chaos. You can start from any attack and pick 90 HP, 45 HP or 1 HP (no hit). Every cleared attack scores points (more without getting hit, more for grazing, more on harder HP), retries cost points, and your best full run is saved.</p>
@@ -140,14 +142,14 @@
   </form>
   <p id="codemsg" role="status"></p>
 
-  <p>Also by the same fan: <a href="https://bautipro67.github.io/roaring-knight-fight-simulator/">Roaring Knight Fight Simulator</a>. See <a href="https://bautipro67.github.io/">all the DELTARUNE fight simulators</a>.</p>
+  <p>More fight simulators by the same fan: <a href="https://bautipro67.github.io/roaring-knight-fight-simulator/">Roaring Knight Fight Simulator</a>, <a href="https://bautipro67.github.io/spamton-neo-fight-simulator/">Spamton NEO Fight Simulator</a> and <a href="https://bautipro67.github.io/">all DELTARUNE fight simulators</a>.</p>
 
   <h2>Credits</h2>
   <p class="small">DELTARUNE and all its characters, graphics, music and sounds are © Toby Fox. This is a free, non-commercial fan project, not affiliated with Toby Fox or 8-4. If you enjoy it, <a href="https://deltarune.com">get the real game</a>. Source code: <a href="https://github.com/bautipro67/jevil-fight-simulator">GitHub</a>.</p>
 </section>
 
 <script>
-  window.APP_VERSION = '20261106232406';
+  window.APP_VERSION = '20261107001914';
   // A browser may keep an old copy of this page for a few minutes after a deploy:
   // if a newer version is out, load it (at most once per version and visit).
   (() => {
@@ -169,6 +171,6 @@
     }).catch(() => {});
   })();
 </script>
-<script type="module" src="src/main.js?v=20261106232406"></script>
+<script type="module" src="src/main.js?v=20261107001914"></script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 // Carousel horses (jattack 4, 8): obj_carouselbullet. They ride a virtual cylinder around the
 // board; on the far side (moving right) they are dimmed, drawn behind and harmless.
-import { defineObject, bgr } from '../rt.js?v=20261106232406';
-import { RegularBulletPermanent } from '../bullets.js?v=20261106232406';
-import { boardRef, ge } from '../common.js?v=20261106232406';
+import { defineObject, bgr } from '../rt.js?v=20261107001914';
+import { RegularBulletPermanent } from '../bullets.js?v=20261107001914';
+import { boardRef, ge } from '../common.js?v=20261107001914';
 
 export class CarouselBullet extends RegularBulletPermanent {
   constructor() {

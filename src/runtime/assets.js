@@ -27,7 +27,7 @@ async function bytes(path) {
   return r.arrayBuffer();
 }
 
-export const MUSIC_FILES = ['prejoker.ogg', 'joker.ogg', 'AUDIO_DEFEAT.ogg'];
+export const MUSIC_FILES = ['prejoker.ogg', 'joker.ogg', 'AUDIO_DRONE.ogg'];
 
 // Graphics and text block startup; audio (see loadAudioInBackground) does not.
 export async function loadAssets(onProgress = () => {}) {
