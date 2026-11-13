@@ -2,8 +2,8 @@
 import {
   global, G, Instance, defineObject, defineScript, S, instance_create, instance_destroy, instance_exists,
   draw_sprite_ext, d3d_set_fog,
-} from '../runtime/gm.js?v=20261107203112';
-import { splitCaller } from './common.js?v=20261107203112';
+} from '../runtime/gm.js?v=20261113111147';
+import { splitCaller } from './common.js?v=20261113111147';
 
 class Marker extends Instance {}
 defineObject('obj_marker', Marker);

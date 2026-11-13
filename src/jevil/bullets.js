@@ -2,8 +2,8 @@
 // obj_regularbullet, obj_regularbullet_permanent, and scr_bullet_inherit.
 import {
   Instance, defineObject, defineScript, instance_destroy, instance_exists, S,
-} from '../runtime/gm.js?v=20261107203112';
-import { view_x, view_y } from './common.js?v=20261107203112';
+} from '../runtime/gm.js?v=20261113111147';
+import { view_x, view_y } from './common.js?v=20261113111147';
 
 export class BulletParent extends Instance {}
 defineObject('obj_bulletparent', BulletParent);

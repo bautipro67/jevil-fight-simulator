@@ -9,7 +9,7 @@
 // - Colours are 0xRRGGBB numbers. GML literals are BGR: wrap them in bgr(0x...).
 // - Angles are degrees, counter-clockwise; y points down (same as GameMaker).
 // - `global` holds GML globals: global.tension, global.hp[...] etc.
-import { assets, spriteMask } from './assets.js?v=20261107203112';
+import { assets, spriteMask } from './assets.js?v=20261113111147';
 
 export const global = {};
 export const ROOM_W = 640;
@@ -642,55 +642,83 @@ export const draw_set_valign = a => { draw.valign = a; };
 export const draw_set_blend_mode = m => { draw.blend = m; };
 export const gpu_set_blendmode = draw_set_blend_mode;
 
-// Per-image caches (sprite strips are canvases, so they are keyed by object, not URL).
-function cacheGet(cache, img, color) {
-  return cache.get(img)?.get(color);
-}
-function cacheSet(cache, img, color, c) {
-  if (!cache.has(img)) cache.set(img, new Map());
-  cache.get(img).set(color, c);
-}
-
-const tintCache = new WeakMap();
-function tinted(img, color) {
-  if ((color & 0xffffff) === 0xffffff) return img;
-  let c = cacheGet(tintCache, img, color);
-  if (!c) {
+// Recoloured copies of a sprite strip or font image, cached per colour. A colour that keeps
+// changing (merge_color fades, hue cycles like the Knight's fountain) would add a full copy every
+// frame and keep it for the whole fight, so past RECOLOR_COLOURS colours per image only the region
+// being drawn is recoloured, in one reusable canvas per image.
+const RECOLOR_COLOURS = 8;
+function recolor(cache, scratch, img, color, r, paint) {
+  let m = cache.get(img);
+  if (!m) cache.set(img, (m = new Map()));
+  let c = m.get(color);
+  if (c) return c;
+  if (m.size < RECOLOR_COLOURS || !r) {
     c = document.createElement('canvas');
     c.width = img.width; c.height = img.height;
-    const x = c.getContext('2d');
-    x.drawImage(img, 0, 0);
-    x.globalCompositeOperation = 'multiply';
-    x.fillStyle = css(color);
-    x.fillRect(0, 0, c.width, c.height);
-    x.globalCompositeOperation = 'destination-in';
-    x.drawImage(img, 0, 0);
-    cacheSet(tintCache, img, color, c);
+    paint(c.getContext('2d'), img, color, 0, 0, img.width, img.height);
+    m.set(color, c);
+    return c;
   }
+  // (the scratch canvas remembers which regions already hold this colour, so drawing the same
+  // frame several times in one colour recolours it once)
+  let s = scratch.get(img);
+  if (!s) {
+    c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    scratch.set(img, (s = { c, color: -1, done: new Set() }));
+  }
+  c = s.c;
+  const x0 = Math.max(0, Math.floor(r[0])), y0 = Math.max(0, Math.floor(r[1]));
+  const x1 = Math.min(img.width, Math.ceil(r[0] + r[2])), y1 = Math.min(img.height, Math.ceil(r[1] + r[3]));
+  if (x1 <= x0 || y1 <= y0) return c;
+  if (s.color !== color) { s.color = color; s.done.clear(); }
+  const key = x0 + ',' + y0 + ',' + x1 + ',' + y1;
+  if (s.done.has(key)) return c;
+  if (s.done.size > 64) s.done.clear();
+  s.done.add(key);
+  const x = c.getContext('2d');
+  x.save();
+  x.beginPath();
+  x.rect(x0, y0, x1 - x0, y1 - y0);
+  x.clip();
+  x.globalCompositeOperation = 'source-over';
+  x.clearRect(x0, y0, x1 - x0, y1 - y0);
+  paint(x, img, color, x0, y0, x1 - x0, y1 - y0);
+  x.restore();
   return c;
+}
+function paintTint(x, img, color, x0, y0, w, h) {
+  x.drawImage(img, x0, y0, w, h, x0, y0, w, h);
+  x.globalCompositeOperation = 'multiply';
+  x.fillStyle = css(color);
+  x.fillRect(x0, y0, w, h);
+  x.globalCompositeOperation = 'destination-in';
+  x.drawImage(img, x0, y0, w, h, x0, y0, w, h);
+}
+function paintFog(x, img, color, x0, y0, w, h) {
+  x.drawImage(img, x0, y0, w, h, x0, y0, w, h);
+  x.globalCompositeOperation = 'source-in';
+  x.fillStyle = css(color);
+  x.fillRect(x0, y0, w, h);
+}
+
+// r = [x, y, w, h]: the part of img about to be drawn.
+const tintCache = new WeakMap();
+const tintRegions = new WeakMap();
+function tinted(img, color, r) {
+  if ((color & 0xffffff) === 0xffffff) return img;
+  return recolor(tintCache, tintRegions, img, color, r, paintTint);
 }
 
 // d3d_set_fog(true, colour, 0, 1): sprites are drawn as solid silhouettes in that colour.
 let fogColor = null;
 const fogCache = new WeakMap();
+const fogRegions = new WeakMap();
 export function d3d_set_fog(enable, color = 0xffffff) {
   fogColor = enable ? (color & 0xffffff) : null;
 }
-function fogged(img, color) {
-  let c = cacheGet(fogCache, img, color);
-  if (!c) {
-    c = document.createElement('canvas');
-    c.width = img.width; c.height = img.height;
-    const x = c.getContext('2d');
-    x.drawImage(img, 0, 0);
-    x.globalCompositeOperation = 'source-in';
-    x.fillStyle = css(color);
-    x.fillRect(0, 0, c.width, c.height);
-    cacheSet(fogCache, img, color, c);
-  }
-  return c;
-}
-const sprSource = (img, col) => (fogColor !== null ? fogged(img, fogColor) : tinted(img, col));
+const fogged = (img, color, r) => recolor(fogCache, fogRegions, img, color, r, paintFog);
+const sprSource = (img, col, r) => (fogColor !== null ? fogged(img, fogColor, r) : tinted(img, col, r));
 
 function begin(alpha) {
   const ctx = G.ctx;
@@ -708,7 +736,7 @@ export function draw_sprite_ext(name, sub, x, y, xs = 1, ys = 1, rot = 0, col = 
   ctx.translate(x, y);
   if (rot) ctx.rotate(-rot * Math.PI / 180);
   if (xs !== 1 || ys !== 1) ctx.scale(xs, ys);
-  ctx.drawImage(sprSource(spr.img, col), f * spr.w, 0, spr.w, spr.h, -spr.ox, -spr.oy, spr.w, spr.h);
+  ctx.drawImage(sprSource(spr.img, col, [f * spr.w, 0, spr.w, spr.h]), f * spr.w, 0, spr.w, spr.h, -spr.ox, -spr.oy, spr.w, spr.h);
   ctx.restore();
 }
 
@@ -724,7 +752,7 @@ export function draw_sprite_part_ext(name, sub, left, top, w, h, x, y, xs = 1, y
   const ctx = begin(alpha);
   ctx.translate(x, y);
   ctx.scale(xs, ys);
-  ctx.drawImage(sprSource(spr.img, col), f * spr.w + left, top, w, h, 0, 0, w, h);
+  ctx.drawImage(sprSource(spr.img, col, [f * spr.w + left, top, w, h]), f * spr.w + left, top, w, h, 0, 0, w, h);
   ctx.restore();
 }
 export const draw_sprite_part = (name, sub, left, top, w, h, x, y) =>
@@ -735,7 +763,7 @@ export function draw_sprite_stretched_ext(name, sub, x, y, w, h, col = 0xffffff,
   if (!spr || !spr.img) return;
   const f = frameOf(spr, sub);
   const ctx = begin(alpha);
-  ctx.drawImage(sprSource(spr.img, col), f * spr.w, 0, spr.w, spr.h, x, y, w, h);
+  ctx.drawImage(sprSource(spr.img, col, [f * spr.w, 0, spr.w, spr.h]), f * spr.w, 0, spr.w, spr.h, x, y, w, h);
   ctx.restore();
 }
 
@@ -868,11 +896,11 @@ function gradientGlyph(font, code, top, bot) {
   c = document.createElement('canvas');
   c.width = g[2]; c.height = g[3];
   const x = c.getContext('2d');
-  x.drawImage(tinted(font.img, top), g[0], g[1], g[2], g[3], 0, 0, g[2], g[3]);
+  x.drawImage(tinted(font.img, top, g), g[0], g[1], g[2], g[3], 0, 0, g[2], g[3]);
   const b = document.createElement('canvas');
   b.width = g[2]; b.height = g[3];
   const bx = b.getContext('2d');
-  bx.drawImage(tinted(font.img, bot), g[0], g[1], g[2], g[3], 0, 0, g[2], g[3]);
+  bx.drawImage(tinted(font.img, bot, g), g[0], g[1], g[2], g[3], 0, 0, g[2], g[3]);
   bx.globalCompositeOperation = 'destination-in';
   const grad = bx.createLinearGradient(0, 0, 0, g[3]);
   grad.addColorStop(0, 'rgba(0,0,0,0)');
@@ -898,12 +926,12 @@ function drawGlyph(ctx, font, code, cx, cy, color) {
     const g = font.glyphs[code];
     if (!g) return;
     const spr = font.spr;
-    ctx.drawImage(tinted(spr.img, color), g.frame * spr.w + g.left, 0, g.w, spr.h, cx, cy, g.w, spr.h);
+    ctx.drawImage(tinted(spr.img, color, [g.frame * spr.w + g.left, 0, g.w, spr.h]), g.frame * spr.w + g.left, 0, g.w, spr.h, cx, cy, g.w, spr.h);
     return;
   }
   const g = font.glyphs[code];
   if (!g || g[2] === 0) return;
-  ctx.drawImage(tinted(font.img, color), g[0], g[1], g[2], g[3], cx + g[5], cy, g[2], g[3]);
+  ctx.drawImage(tinted(font.img, color, g), g[0], g[1], g[2], g[3], cx + g[5], cy, g[2], g[3]);
 }
 
 export function draw_text_transformed_color(x, y, s, xs, ys, ang, color, alpha) {

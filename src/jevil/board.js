@@ -1,8 +1,8 @@
 // The bullet board: obj_battlesolid (parent of every wall) and obj_growtangle.
 import {
   Instance, defineObject, instance_create, instance_destroy, merge_color, draw_sprite_ext, draw_self,
-} from './rt.js?v=20261107203112';
-import { first } from './common.js?v=20261107203112';
+} from './rt.js?v=20261113111147';
+import { first } from './common.js?v=20261113111147';
 
 export class BattleSolid extends Instance {}
 defineObject('obj_battlesolid', BattleSolid);
