@@ -8,13 +8,13 @@ import {
   instancesOf, event_user, choose, keyboard_check, keyboard_check_pressed, random_set_seed, round, S,
   draw_set_font, draw_set_halign, draw_set_color, draw_set_alpha, draw_rectangle, draw_text, draw_sprite_ext,
   fa_left, fa_center, merge_color, button1_p, vk, draw_self,
-} from '../runtime/gm.js?v=20261114002509';
-import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js?v=20261114002509';
-import { gotoRoom } from '../screens/common.js?v=20261114002509';
-import { getBest, saveBest } from '../settings.js?v=20261114002509';
-import { drawSoulHat } from '../hats.js?v=20261114002509';
-import { tagParent } from '../jevil/common.js?v=20261114002509';
-import { scr_moveheart } from '../jevil/soul.js?v=20261114002509';
+} from '../runtime/gm.js?v=20261114041600';
+import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js?v=20261114041600';
+import { gotoRoom } from '../screens/common.js?v=20261114041600';
+import { getBest, saveBest } from '../settings.js?v=20261114041600';
+import { drawSoulHat } from '../hats.js?v=20261114041600';
+import { tagParent } from '../jevil/common.js?v=20261114041600';
+import { scr_moveheart } from '../jevil/soul.js?v=20261114041600';
 
 export const ATTACKS = [
   [0, 70, 'Five-spade teleports'], [1, 65, 'Spade spirals'], [2, 49, 'Heart bombs'], [3, 75, 'Spinning scythes'],
@@ -433,7 +433,10 @@ class PracticeController extends SandboxController {
   }
   step() {
     if (this.finished) {
-      if (button1_p()) this.quit();
+      // The results stay up a moment: a Z pressed as the last attack ends (shooting, mashing)
+      // does not skip them. (alarm2 sets finished before this step runs, in the same frame.)
+      this.endTimer = (this.endTimer ?? 0) + 1;
+      if (this.endTimer > 20 && button1_p()) this.quit();
       return;
     }
     // A hit costs the biggest HP loss of any party member that frame (bombs hit everyone at once).

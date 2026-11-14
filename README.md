@@ -39,6 +39,14 @@ python -m http.server 8000
 
 Then open `http://localhost:8000`.
 
+## Self test
+
+```
+node tools/selftest/run.mjs
+```
+
+Plays the whole simulator by itself in a headless Chrome or Edge and lists what passed and what broke (an error, a missing asset, a scene or fight that never reaches its end): the scenes, the whole fight with and without them, practice mode and every attack in the sandbox. Nothing to install, only Node 22 or newer and Chrome or Edge. `--quick` skips the sandbox runs, `--only <text>` runs the scenarios whose name has that text, `--list` lists them and `--shots <folder>` saves the last frame of each. The scenarios are in `tools/selftest/sim.js`.
+
 ## How it was made
 
 - `tools/datawin.py` reads GameMaker `data.win` files (sprites, fonts, sounds).
