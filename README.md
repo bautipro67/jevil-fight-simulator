@@ -45,7 +45,7 @@ Then open `http://localhost:8000`.
 node tools/selftest/run.mjs
 ```
 
-Plays the whole simulator by itself in a headless Chrome or Edge and lists what passed and what broke (an error, a missing asset, a scene or fight that never reaches its end): the scenes, the whole fight with and without them, practice mode and every attack in the sandbox. Nothing to install, only Node 22 or newer and Chrome or Edge. `--quick` skips the sandbox runs, `--only <text>` runs the scenarios whose name has that text, `--list` lists them and `--shots <folder>` saves the last frame of each. The scenarios are in `tools/selftest/sim.js`.
+Plays the whole simulator by itself in a headless Chrome or Edge and lists what passed and what broke (an error, a missing file or sound, a scene or fight that never reaches its end): the scenes, the whole fight with and without them, practice mode, every attack in the sandbox, the title menus (options, controls, equipment), a gamepad, the pause menu, the game over, the Codes box, every weapon, armor, item and SOUL hat, and a fight using every battle option. Then it checks the page at desktop, phone and tablet sizes, touch controls included. Nothing to install, only Node 22 or newer and Chrome or Edge. `--quick` skips the sandbox runs and the screen checks, `--only <text>` runs the scenarios whose name has that text (`screen` for the screen checks), `--list` lists them, `--url <address>` tests a published copy such as the GitHub Pages site, and `--shots <folder>` saves the last frame of each. The scenarios are in `tools/selftest/sim.js`.
 
 ## How it was made
 
