@@ -5,9 +5,9 @@
 import {
   global, defineObject, instance_create, instance_destroy, instancesOf, random, choose,
   lengthdir_x, lengthdir_y, snd_play, snd_loop, snd_stop, snd_volume, S,
-} from '../rt.js?v=20261113111147';
-import { BulletGenParent, scr_bullet_inherit } from '../bullets.js?v=20261113111147';
-import { first, setAll, boardRef, heartRef, view_x, view_y, scr_dark_marker, scr_84_get_sound, ge, le } from '../common.js?v=20261113111147';
+} from '../rt.js?v=20261114002509';
+import { BulletGenParent, scr_bullet_inherit } from '../bullets.js?v=20261114002509';
+import { first, setAll, boardRef, heartRef, view_x, view_y, scr_dark_marker, scr_84_get_sound, ge, le } from '../common.js?v=20261114002509';
 
 export class DBulletController extends BulletGenParent {
   constructor() {

@@ -1,8 +1,8 @@
 // Spade spirals (jattack 1, 7): obj_spadering places a ring of spades outside the board,
 // pulls them in, then launches them one by one back across the board.
-import { defineObject, instance_create, instance_destroy, random, lengthdir_x, lengthdir_y, bgr } from '../rt.js?v=20261113111147';
-import { BulletParent, scr_bullet_inherit } from '../bullets.js?v=20261113111147';
-import { boardRef } from '../common.js?v=20261113111147';
+import { defineObject, instance_create, instance_destroy, random, lengthdir_x, lengthdir_y, bgr } from '../rt.js?v=20261114002509';
+import { BulletParent, scr_bullet_inherit } from '../bullets.js?v=20261114002509';
+import { boardRef } from '../common.js?v=20261114002509';
 
 export class SpadeRing extends BulletParent {
   constructor() {

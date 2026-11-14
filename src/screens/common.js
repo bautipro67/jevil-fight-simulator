@@ -2,9 +2,9 @@
 import {
   G, global, Instance, defineObject, room_reset, instance_create, instance_destroy, draw_sprite_ext, draw_sprite_stretched_ext,
   draw_set_color, draw_set_font, draw_text, draw_sprite, string_width, up_p, down_p, left_p, right_p, button1_p, button2_p, round,
-} from '../runtime/gm.js?v=20261113111147';
-import { audio_stop_all, snd_play } from '../runtime/audio.js?v=20261113111147';
-import { audioStatus } from '../runtime/assets.js?v=20261113111147';
+} from '../runtime/gm.js?v=20261114002509';
+import { audio_stop_all, snd_play } from '../runtime/audio.js?v=20261114002509';
+import { audioStatus } from '../runtime/assets.js?v=20261114002509';
 
 // room_goto: drop every instance and keep only the globals a screen needs.
 export function gotoRoom(keep = {}) {

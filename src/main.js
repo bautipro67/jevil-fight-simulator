@@ -1,13 +1,13 @@
-import { loadAssets, loadAudioInBackground } from './runtime/assets.js?v=20261113111147';
-import { audioInit, audioPreload, audioState } from './runtime/audio.js?v=20261113111147';
-import * as gm from './runtime/gm.js?v=20261113111147';
-import { G } from './runtime/gm.js?v=20261113111147';
-import { setupTouch } from './touch.js?v=20261113111147';
-import { setupFullscreen } from './fullscreen.js?v=20261113111147';
-import { loadSettings, applyVolume } from './settings.js?v=20261113111147';
-import { isPaused, pauseStep, openPause, togglePause, pauseContext } from './pause.js?v=20261113111147';
-import './screens/controls.js?v=20261113111147';
-import './codes.js?v=20261113111147';
+import { loadAssets, loadAudioInBackground } from './runtime/assets.js?v=20261114002509';
+import { audioInit, audioPreload, audioState } from './runtime/audio.js?v=20261114002509';
+import * as gm from './runtime/gm.js?v=20261114002509';
+import { G } from './runtime/gm.js?v=20261114002509';
+import { setupTouch } from './touch.js?v=20261114002509';
+import { setupFullscreen } from './fullscreen.js?v=20261114002509';
+import { loadSettings, applyVolume } from './settings.js?v=20261114002509';
+import { isPaused, pauseStep, openPause, togglePause, pauseContext } from './pause.js?v=20261114002509';
+import './screens/controls.js?v=20261114002509';
+import './codes.js?v=20261114002509';
 
 loadSettings();
 
@@ -37,8 +37,21 @@ function fit() {
   const scale = full || fs < 1 ? fs : s;
   canvas.style.width = Math.floor(640 * scale) + 'px';
   canvas.style.height = Math.floor(480 * scale) + 'px';
+  // 'pixelated' scaling only keeps every pixel when the canvas starts on a whole device pixel and
+  // is not shrunk. Centred in an odd page width (a scrollbar takes 15 px) it starts at half a pixel,
+  // and shrunk below 1:1 whole rows and columns are skipped: either way single-pixel lines, such as
+  // the bullet board's border, can vanish. So shift the canvas onto the device pixel grid, and below
+  // 1:1 let the browser blend the pixels instead of dropping them.
+  const dpr = devicePixelRatio || 1;
+  canvas.style.imageRendering = scale * dpr < 1 ? 'auto' : '';
+  canvas.style.transform = '';
+  const r = canvas.getBoundingClientRect();
+  const fx = (((r.left + scrollX) * dpr) % 1 + 1) % 1, fy = (((r.top + scrollY) * dpr) % 1 + 1) % 1;
+  if (fx > 0.001 || fy > 0.001) canvas.style.transform = `translate(${-fx / dpr}px, ${-fy / dpr}px)`;
 }
 addEventListener('resize', fit);
+// The page's scrollbar appearing changes the width without a resize event.
+if (window.ResizeObserver) new ResizeObserver(() => fit()).observe(document.documentElement);
 fit();
 
 function drawLoading(p) {
@@ -100,13 +113,13 @@ function debugKeys() {
 
 async function start() {
   // Registers every ported object and script.
-  await Promise.all([import('./battle/index.js?v=20261113111147'), import('./jevil/index.js?v=20261113111147')]);
+  await Promise.all([import('./battle/index.js?v=20261114002509'), import('./jevil/index.js?v=20261114002509')]);
   const mode = params.has('sandbox') ? 'sandbox' : 'battle';
   if (mode === 'sandbox') {
-    const sb = await import('./debug/sandbox.js?v=20261113111147');
+    const sb = await import('./debug/sandbox.js?v=20261114002509');
     sb.startSandbox(params);
   } else {
-    const title = await import('./screens/title.js?v=20261113111147');
+    const title = await import('./screens/title.js?v=20261114002509');
     title.startTitle();
   }
 }
