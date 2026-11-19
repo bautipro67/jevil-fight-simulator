@@ -9,7 +9,7 @@
 // - Colours are 0xRRGGBB numbers. GML literals are BGR: wrap them in bgr(0x...).
 // - Angles are degrees, counter-clockwise; y points down (same as GameMaker).
 // - `global` holds GML globals: global.tension, global.hp[...] etc.
-import { assets, spriteMask } from './assets.js?v=20261114041600';
+import { assets, spriteMask } from './assets.js?v=20261119142817';
 
 export const global = {};
 export const ROOM_W = 640;
@@ -818,7 +818,13 @@ export function draw_triangle(x1, y1, x2, y2, x3, y3, outline = false) {
   const ctx = begin(draw.alpha);
   ctx.beginPath();
   ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.closePath();
-  if (outline) { ctx.strokeStyle = css(draw.color); ctx.stroke(); } else { ctx.fillStyle = css(draw.color); ctx.fill(); }
+  if (outline) { ctx.strokeStyle = css(draw.color); ctx.stroke(); } else {
+    ctx.fillStyle = css(draw.color); ctx.fill();
+    // GameMaker fills whole pixels, so triangles sharing an edge leave no seam. The canvas
+    // antialiases each edge and the background shows through between them; a hairline of the
+    // same colour closes that gap (only when opaque, where the overlap cannot double the alpha).
+    if (draw.alpha >= 1) { ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 0.75; ctx.stroke(); }
+  }
   ctx.restore();
 }
 

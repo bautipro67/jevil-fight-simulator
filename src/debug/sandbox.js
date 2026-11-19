@@ -8,13 +8,13 @@ import {
   instancesOf, event_user, choose, keyboard_check, keyboard_check_pressed, random_set_seed, round, S,
   draw_set_font, draw_set_halign, draw_set_color, draw_set_alpha, draw_rectangle, draw_text, draw_sprite_ext,
   fa_left, fa_center, merge_color, button1_p, vk, draw_self,
-} from '../runtime/gm.js?v=20261114041600';
-import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js?v=20261114041600';
-import { gotoRoom } from '../screens/common.js?v=20261114041600';
-import { getBest, saveBest } from '../settings.js?v=20261114041600';
-import { drawSoulHat } from '../hats.js?v=20261114041600';
-import { tagParent } from '../jevil/common.js?v=20261114041600';
-import { scr_moveheart } from '../jevil/soul.js?v=20261114041600';
+} from '../runtime/gm.js?v=20261119142817';
+import { snd_play, snd_init, mus_loop_ext, mus_stop, snd_stop } from '../runtime/audio.js?v=20261119142817';
+import { gotoRoom } from '../screens/common.js?v=20261119142817';
+import { getBest, saveBest } from '../settings.js?v=20261119142817';
+import { drawSoulHat } from '../hats.js?v=20261119142817';
+import { tagParent } from '../jevil/common.js?v=20261119142817';
+import { scr_moveheart } from '../jevil/soul.js?v=20261119142817';
 
 export const ATTACKS = [
   [0, 70, 'Five-spade teleports'], [1, 65, 'Spade spirals'], [2, 49, 'Heart bombs'], [3, 75, 'Spinning scythes'],
